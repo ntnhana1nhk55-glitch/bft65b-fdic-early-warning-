@@ -244,7 +244,7 @@ def generate_fig1():
     )
 
     fig.suptitle(
-        "Figure 1: Forty-Two Years of U.S. Banking Distress & Structural Consolidation (1984Q1–2026Q2)",
+        "Figure 2: Forty-Two Years of U.S. Banking Distress & Structural Consolidation (1984Q1–2026Q2)",
         fontsize=13,
         fontweight="bold",
         y=0.97,
@@ -335,21 +335,25 @@ def generate_fig2():
     snappy_idx = bench[bench["display_name"].str.contains("Snappy")].index[0]
     csv_idx = bench[bench["display_name"].str.contains("Raw CSV")].index[0]
     csv_lat = bench.loc[csv_idx, "predicate_projection_read_polars_median_ms"]
+    csv_full_lat = bench.loc[csv_idx, "full_read_polars_median_ms"]
+    pandas_full_lat = bench.loc[csv_idx, "full_read_pandas_median_ms"]
     snappy_lat = bench.loc[snappy_idx, "predicate_projection_read_polars_median_ms"]
     speedup = csv_lat / snappy_lat
+    speedup_polars_full = csv_full_lat / snappy_lat
+    speedup_pandas_full = pandas_full_lat / snappy_lat
 
     ax2.annotate(
-        f"31.9 ms ({speedup:.1f}x vs Polars CSV;\n78.3x vs Full CSV Scan)",
+        f"31.9 ms ({speedup:.1f}x vs Polars CSV;\n{speedup_polars_full:.1f}x vs Polars Full CSV; {speedup_pandas_full:.1f}x vs Pandas CSV)",
         xy=(snappy_lat, snappy_idx - bar_width),
-        xytext=(snappy_lat * 2.8, snappy_idx - bar_width - 0.35),
+        xytext=(snappy_lat * 2.5, snappy_idx - bar_width - 0.35),
         arrowprops=dict(arrowstyle="->", color="#2e7d32", lw=1.2),
         fontweight="bold",
         color="#2e7d32",
-        fontsize=8.2,
+        fontsize=8.0,
     )
 
     fig.suptitle(
-        "Figure 2: Storage Layout Benchmark & Pushdown Query Efficiency (Full 1.68M Bank-Quarter Panel)",
+        "Figure 1: Storage Layout Benchmark & Pushdown Query Efficiency (Full 1.68M Bank-Quarter Panel)",
         fontsize=12.5,
         fontweight="bold",
         y=0.98,
@@ -383,16 +387,18 @@ def generate_fig3():
         .collect()
     )
 
-    ytd_stats = (
-        df.group_by("quarter")
-        .agg([
-            pl.col("NETINC").median().alias("median_netinc"),
-            pl.col("INTINC").median().alias("median_intinc"),
-            pl.col("ROA").median().alias("median_roa"),
-        ])
-        .sort("quarter")
-        .to_pandas()
-    )
+    dq_path = REPORTS_DIR / "data_quality_report.json"
+    if not dq_path.exists():
+        raise FileNotFoundError(f"Missing {dq_path}")
+    dq = json.loads(dq_path.read_text(encoding="utf-8"))
+    ytd_prog = dq["ytd_income_statement_progression"]
+    q_keys = ["Q1 (Mar 31)", "Q2 (Jun 30)", "Q3 (Sep 30)", "Q4 (Dec 31)"]
+    ytd_stats = pd.DataFrame({
+        "quarter": [1, 2, 3, 4],
+        "median_netinc": [ytd_prog[k]["median_netinc"] for k in q_keys],
+        "median_intinc": [ytd_prog[k]["median_intinc"] for k in q_keys],
+        "median_roa": [ytd_prog[k]["median_roa"] for k in q_keys],
+    })
 
     cum_net = ytd_stats["median_netinc"].tolist()
     decum_net = [cum_net[0]] + [cum_net[i] - cum_net[i - 1] for i in range(1, 4)]

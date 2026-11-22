@@ -51,7 +51,7 @@ The system builds an enterprise-grade Big Data early-warning pipeline for bankin
 ## 2. Repository Directory Structure
 
 ```text
-fdic-early-warning-system/
+bft65b-fdic-early-warning-/
 ├── data/                                 # Data storage (Raw, Processed Silver, Features Gold)
 │   ├── raw/                              # Raw FDIC API downloads (170 quarterly partitions)
 │   │   ├── financials/                   # Partitioned Call Reports (REPDTE=YYYYMMDD.parquet)

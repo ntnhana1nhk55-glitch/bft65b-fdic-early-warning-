@@ -118,7 +118,7 @@ def setup_document_styles(doc):
     footer = section.footer
     fp = footer.paragraphs[0]
     fp.text = ""
-    frun_left = fp.add_run("https://github.com/bft65b-finance/fdic-early-warning-system")
+    frun_left = fp.add_run("https://github.com/ntnhana1nhk55-glitch/bft65b-fdic-early-warning-")
     frun_left.font.name = "Times New Roman"
     frun_left.font.size = Pt(9.0)
     frun_left.font.color.rgb = MUTED_RGB
@@ -604,7 +604,7 @@ def generate_full_word_report():
     add_heading_2(doc, "Amdahl Law Scaling and Single Node Memory Boundaries")
     add_body_p(
         doc,
-        "Evaluating multi core scaling from 1 to 20 threads yields an empirical execution drop from 5.636 seconds at 1 thread down to 0.974 seconds at 16 threads, achieving a 5.79 fold speedup before plateauing due to memory bus saturation. Fitting Amdahl Law yields an estimated parallel fraction of 87.68 percent with serial fraction of 8.88 percent and theoretical speedup limit of 8.12 fold.",
+        "Evaluating multi core scaling from 1 to 20 threads yields an empirical execution drop from 5.636 seconds at 1 thread down to 0.974 seconds at 16 threads, achieving a 5.79 fold speedup before plateauing due to memory bus saturation. Fitting Amdahl Law yields an estimated parallel fraction of 87.68 percent with serial fraction of 12.32 percent and theoretical speedup limit of 8.12 fold.",
     )
     add_body_p(
         doc,
@@ -742,8 +742,8 @@ def generate_full_word_report():
     t8_headers = ["Cost Ratio FN to FP", "Optimal Cutoff", "Test True Pos", "Test False Pos", "Institution Recall", "Dollar Recall", "Net Savings Full Loss", "Net Savings Half Loss"]
     t8_rows = [
         ["Ratio 10 to 1", "0.0592", "1,600", "2,211", "77.97 %", "77.00 %", "USD 1,378.9 M", "USD 578.9 M"],
-        ["Ratio 26 to 1 Baseline", "0.0401", "1,679", "2,909", "81.82 %", "79.85 %", "USD 4,074.1 M", "USD 1,822.4 M"],
-        ["Ratio 50 to 1", "0.0163", "1,812", "5,206", "88.30 %", "89.37 %", "USD 8,539.4 M", "USD 3,999.4 M"],
+        ["Ratio 26 to 1 Baseline", "0.0401", "1,679", "2,909", "81.82 %", "79.85 %", "USD 4,074.1 M", "USD 1,891.6 M"],
+        ["Ratio 50 to 1", "0.0163", "1,812", "5,206", "88.30 %", "89.37 %", "USD 8,539.4 M", "USD 4,009.4 M"],
         ["Ratio 100 to 1", "0.0115", "1,844", "6,323", "89.86 %", "91.07 %", "USD 17,807.7 M", "USD 8,587.7 M"],
         ["Ratio 250 to 1", "0.0020", "1,947", "15,969", "94.88 %", "96.98 %", "USD 47,078.1 M", "USD 22,740.6 M"],
     ]
@@ -858,7 +858,7 @@ def generate_full_word_report():
         ["cash_to_asset", "L", "Cash and balances due from banks to assets", "0.00 %", "0.0416", "0.0472", "0.5643"],
         ["loans_to_deposits", "L", "Gross loans divided by total deposits", "0.62 %", "0.7060", "0.6886", "0.5177"],
         ["bro_to_dep", "L", "Brokered deposits divided by total deposits", "1.90 %", "0.0000", "0.0000", "0.6186"],
-        ["non_deposit_funding_to_ast", "L", "Non deposit liabilities to total assets", "0.24 %", "0.0307", "0.0170", "0.5987"],
+        ["non_deposit_funding_to_asset", "L", "Non deposit liabilities to total assets", "0.24 %", "0.0307", "0.0170", "0.5987"],
         ["eq_to_asset_diff_4q", "S", "Trailing four quarter change in equity to assets", "8.00 %", "-0.0305", "0.0009", "0.8672"],
         ["npl_to_loans_diff_4q", "S", "Trailing four quarter change in nonaccrual ratio", "8.81 %", "0.0176", "-0.0001", "0.6500"],
         ["liquid_to_asset_diff_4q", "S", "Trailing four quarter change in liquid assets", "7.78 %", "-0.0019", "-0.0056", "0.5143"],

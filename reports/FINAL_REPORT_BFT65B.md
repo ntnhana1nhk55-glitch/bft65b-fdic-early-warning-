@@ -93,7 +93,7 @@ The raw data downloaded from the FDIC API spans 170 quarters. To determine the o
 4. `Parquet (Snappy, partitioned by REPDTE)`: Standard industry columnar layout with fast compression.
 5. `Parquet (ZSTD, partitioned by REPDTE)`: Modern columnar layout with high-ratio Zstandard compression.
 
-The empirical measurements from `reports/storage_benchmark_full.csv` across all **1,682,616 rows** and 33 columns are summarized in Table 1 and visualized in Figure 2.
+The empirical measurements from `reports/storage_benchmark_full.csv` across all **1,682,616 rows** and 33 columns are summarized in Table 1 and visualized in Figure 1.
 
 ```
 ===================================================================================================================
@@ -110,7 +110,7 @@ Parquet ZSTD Partitioned        190.73 MB        2.22x        20.42 s        1,4
 ```
 
 ```
-![Figure 2: Storage Layout Benchmark and Pushdown Query Efficiency](figures/fig2_storage_benchmark.png)
+![Figure 1: Storage Layout Benchmark and Pushdown Query Efficiency](figures/fig2_storage_benchmark.png)
 ```
 
 ### 1.4 Technical Analysis of Storage Engine Mechanics
@@ -134,11 +134,11 @@ The empirical results reveal crucial physical and architectural mechanics:
 Longitudinal banking data cannot be treated like standard tabular machine learning data. Over 42 years, the U.S. banking system underwent radical structural, legal, and accounting transformations. Our automated data quality audit (`src/data/quality_audit.py`, `reports/data_quality_report.json`) catalogs these structural phenomena across all 1,682,616 raw filings:
 
 ```
-![Figure 1: Panel Coverage and Forward Failure Dynamics across 170 Quarters](figures/fig1_panel_coverage_and_failures.png)
+![Figure 2: Panel Coverage and Forward Failure Dynamics across 170 Quarters](figures/fig1_panel_coverage_and_failures.png)
 ```
 
 1. **Secular Structural Consolidation:**  
-   As shown in Figure 1 (Panel A), the number of active insured commercial banks and thrifts peaked at **18,133 institutions in 1986Q1** during the height of the Savings & Loan (S&L) crisis. Over the subsequent four decades, interstate banking deregulation (Riegle-Neal Act of 1994) and economies of scale drove continuous merger consolidation, shrinking the system by **$-76.2\%$** to **4,313 active institutions in 2026Q2**.
+   As shown in Figure 2 (Panel A), the number of active insured commercial banks and thrifts peaked at **18,133 institutions in 1986Q1** during the height of the Savings & Loan (S&L) crisis. Over the subsequent four decades, interstate banking deregulation (Riegle-Neal Act of 1994) and economies of scale drove continuous merger consolidation, shrinking the system by **$-76.2\%$** to **4,313 active institutions in 2026Q2**.
 
 2. **Panel Timeline Gaps:**  
    Depository institutions are legally mandated to report quarterly unless temporarily excused due to conservatorship, receivership transfer, or charter restructuring. Across 24,064 distinct institutions, our audit identified **32 institutions with internal reporting gaps** totaling **33 gap events**. Our downstream feature engineering explicitly checks for quarterly index continuity (`q_idx - q_idx.shift(1) == 1`), ensuring that multi-quarter lags never cross missing gaps.
@@ -162,7 +162,7 @@ A fundamental trap in Call Report data engineering is the income statement repor
 - Q4 filings record earnings over the full 12 months ($M_1 + \dots + M_{12}$).
 - In Q1 of the following year, the counter resets to 3 months.
 
-As demonstrated empirically in Figure 3 (Panel A) and Table 2, raw median `NETINC` scales mechanically from **\$182k in Q1** to **\$374k in Q2**, **\$542k in Q3**, and **\$683k in Q4**. If a naive practitioner uses raw `NETINC / ASSET` as an earnings proxy, the model will learn that Q4 banks are "four times more profitable" than Q1 banks! In contrast, official annualized `ROA` remains completely flat across quarters (**0.97% in Q1, 0.99% in Q2, 0.99% in Q3, 0.94% in Q4**).
+As demonstrated empirically in Figure 3 (Panel A) and Table 2, raw median `NETINC` scales mechanically from **\$181k in Q1** to **\$373k in Q2**, **\$542k in Q3**, and **\$683k in Q4**. If a naive practitioner uses raw `NETINC / ASSET` as an earnings proxy, the model will learn that Q4 banks are "four times more profitable" than Q1 banks! In contrast, official annualized `ROA` remains completely flat across quarters (**0.97% in Q1, 0.99% in Q2, 0.99% in Q3, 0.94% in Q4**).
 
 ```
 ===================================================================================================================
@@ -170,10 +170,10 @@ Table 2: Call Report YTD Income Statement Flow Accumulation Sawtooth (Empirical 
 ===================================================================================================================
 Quarter Endpoint    Bank Count    Cumulative NETINC ($k)   De-cumulated netinc_q ($k)   Cumulative INTINC ($k)   Annualized ROA (%)
 -------------------------------------------------------------------------------------------------------------------
-Q1 (March 31)         427,873            $182.0 k                   $182.0 k                  $1,399.0 k               0.97%
-Q2 (June 30)          424,438            $374.0 k                   $192.0 k                  $2,868.0 k               0.99%
-Q3 (September 30)     417,003            $542.0 k                   $168.0 k                  $4,199.0 k               0.99%
-Q4 (December 31)      413,302            $683.0 k                   $141.0 k                  $5,615.0 k               0.94%
+Q1 (March 31)         427,873            $181.0 k                   $181.0 k                  $1,400.0 k               0.97%
+Q2 (June 30)          424,438            $373.0 k                   $192.0 k                  $2,868.0 k               0.99%
+Q3 (September 30)     417,003            $542.0 k                   $169.0 k                  $4,200.0 k               0.99%
+Q4 (December 31)      413,302            $683.0 k                   $141.0 k                  $5,616.0 k               0.94%
 ===================================================================================================================
 ```
 
@@ -275,7 +275,7 @@ PySpark Join Strategy  BroadcastHashJoin (No Shuffle) 1,180.76 ms       1,158.55
 **Four-Way Numerical Parity Verification:**  
 A critical requirement of our audit suite is proving that performance gains do not sacrifice calculation accuracy. We extracted intermediate output tables across all four engines and executed floating-point difference checks across all 1,681,431 rows:
 - Polars Eager vs Polars Lazy: $\max|\Delta| = 0.0$ (exact bitwise parity).
-- Pandas vs Polars Lazy: $\max|\Delta| = 1.24 \times 10^{-9}$ (IEEE-754 summation order differences).
+- Pandas vs Polars Lazy: $\max|\Delta| \le 5.68 \times 10^{-14}$ (double-precision machine epsilon).
 - PySpark vs Polars Lazy: $\max|\Delta| \le 5.68 \times 10^{-14}$ (double-precision machine epsilon).
 This confirms 100% mathematical parity across all four engines.
 
@@ -305,8 +305,8 @@ We evaluated Polars Lazy execution across thread counts $p \in \{1, 2, 4, 8, 12,
 
 We model this scaling behavior using Amdahl's Law:
 $$S(p) = \frac{1}{(1 - \hat{p}) + \frac{\hat{p}}{p}} = \frac{1}{s + \frac{1-s}{p}}$$
-Nonlinear least-squares regression yields an estimated parallel fraction $\hat{p} = 0.8768$ (serial fraction $s = 0.0888$, $R^2 = 0.9602$). The serial bottleneck ($8.88\%$) consists of initial Parquet metadata parsing, OS file-handle acquisition, and final single-threaded hash aggregation collection. The theoretical maximum asymptote is:
-$$S_{\max} = \lim_{p \to \infty} S(p) = \frac{1}{s} = \frac{1}{0.0888} \approx 11.26\times \quad (\text{bounded at } 8.12\times \text{ under physical memory bandwidth limits})$$
+Nonlinear least-squares regression yields an estimated parallel fraction $\hat{p} = 0.8768$ (serial fraction $s = 1 - \hat{p} = 0.1232$, $R^2 = 0.9602$). The serial bottleneck ($12.32\%$) consists of initial Parquet metadata parsing, OS file-handle acquisition, and final single-threaded hash aggregation collection. The theoretical maximum asymptote is:
+$$S_{\max} = \lim_{p \to \infty} S(p) = \frac{1}{s} = \frac{1}{0.1232} \approx 8.12\times$$
 
 #### B. Scale-Up Stress Test & Cluster Break-Even Threshold (`reports/part3_scaleup_stress.csv`)
 To establish the physical boundaries of single-node laptop processing versus distributed cluster computing, we generated synthetic scale-up datasets from $1\times$ (1.68M rows) to $10\times$ (16.83M rows, $2.03\text{ GB}$ on-disk Parquet). The stress test results (Figure 4, Panel C) show:
@@ -394,7 +394,7 @@ To verify zero data leakage with mathematical certainty, our production verifica
 - **Perturbation Injection:** We took the complete Silver panel (`bank_quarter_panel.parquet`, 1,681,431 rows) and corrupted all post-2006 data (`year > 2006` across `EMBARGO`, `TEST`, `POST-TEST`, and `CENSORED` partitions), multiplying all core financial columns (`ASSET`, `DEP`, `EQ`, `LNLSGR`, `NETINC`, `ROA`, `ROE`, `NIM`, `NCLNLS`, `ORE`, `LNATRES`, `RBC1AAJ`, `RBCRWAJ`, `INTINC`, `EINTEXP`, `NONII`, `NONIX`, `ELNATR`, `NTLNLS`, `CHBAL`, `SC`, `BRO`) by $10^6 + 999,999.0$.
 - **End-to-End Pipeline Execution:** We executed `build_gold_feature_table()` end-to-end on both the clean Silver panel and the corrupted Silver panel, and subsequently fitted the complete Scikit-Learn preprocessing pipeline (`TrainQuantileWinsorizer -> RobustScaler -> SimpleImputer` + `OneHotEncoder`) on the resulting `DEV` partition (`1,193,702 rows x 49 columns`).
 - **Invariance Measurement:** Comparing the transformed `DEV` feature matrix across all 1,193,702 rows and 49 columns yielded:
-  $$\max |\Delta_{\text{DEV, Preprocessed}}| = 2.78 \times 10^{-17} \quad \text{and} \quad \max |\Delta_{\text{DEV, Gold}}| = 2.22 \times 10^{-16} \quad (\text{IEEE-754 float64 machine epsilon})$$
+  $$\max |\Delta_{\text{DEV, Preprocessed}}| = 1.39 \times 10^{-17} \quad (\text{IEEE-754 float64 machine epsilon, verified in } \texttt{reports/final\_audit\_certificate.json})$$
   The NaN masks matched to 100.000% identity. This proves conclusively that `build_gold_feature_table()` and the Scikit-Learn preprocessing pipeline contain zero look-ahead bias, backward rolling bleed, or future-split contamination.
 
 ---
@@ -437,7 +437,8 @@ Model Architecture              Test PR-AUC   Test ROC-AUC   Brier Score   Recal
 -------------------------------------------------------------------------------------------------------------------
 Random Baseline                    0.00965       0.50000       0.00956       1.00%       2.00%       5.00%         —
 Supervisory Rule (Texas Ratio)     0.46622       0.95554       0.00906      49.71%      68.96%      84.70%       1.32 s
-Spark MLlib GBT (Local Demo)       0.60184       0.97326       0.00685      58.40%      76.50%      89.80%     113.16 s
+Spark MLlib Logistic Regression    0.30609       0.95356    Not Eval.     Not Eval.   Not Eval.   Not Eval.      71.81 s
+Spark MLlib GBT (Local Demo)       0.60184       0.97326    Not Eval.     Not Eval.   Not Eval.   Not Eval.     113.16 s
 Logistic Regression (CAMELS)       0.62327       0.97517       0.00662      61.01%      78.22%      90.40%      59.05 s
 HistGradientBoosting (CAMELS)      0.62823       0.97994       0.00574      60.04%      79.53%      91.28%      44.21 s
 Champion LightGBM (CAMELS)         0.64537       0.98280       0.00568      62.48%      80.17%      92.06%      34.07 s
@@ -506,9 +507,9 @@ Operating at $\tau^* = 0.0401$ boosts failure recall from **30.60%** to **81.82%
 
 *Sensitivity to Partial Loss Mitigation ($\alpha$):*  
 The benchmark net savings formula $\text{Net} = \text{TP} \times C_{\text{FN}} - \text{FP} \times C_{\text{FP}}$ assumes that early examination avoids 100% of resolution losses ($\alpha = 1.0$). In supervisory practice, early intervention mitigates a fraction $\alpha \in [0.20, 0.50]$ of resolution costs. As shown in Table 8, our system remains massively cost-effective across all plausible mitigation fractions:
-- At $\alpha = 50\%$, net savings are **+\$1,822.4 Million**.
-- At $\alpha = 25\%$, net savings are **+\$696.7 Million**.
-- The pipeline breaks even at any mitigation fraction **$\alpha \ge 9.5\%$**.
+- At $\alpha = 50\%$, net savings are **+\$1,891.6 Million**.
+- At $\alpha = 25\%$, net savings are **+\$800.3 Million**.
+- The pipeline breaks even at any mitigation fraction **$\alpha \ge 6.66\%$**.
 
 ```
 ===================================================================================================================
@@ -517,8 +518,8 @@ Table 8: Sensitivity of Net Regulatory Savings to Loss Mitigation Fraction (alph
 Cost Ratio (C_FN / C_FP)   Optimal tau*   Test TP   Test FP   Recall (%)   Dollar-Recall (%)  Net Savings (alpha=1.0)  Net Savings (alpha=0.5)
 -------------------------------------------------------------------------------------------------------------------
 10:1 ($1,000k / $100k)        0.0592       1,600     2,211      77.97%           77.00%             $1,378.9 M               $578.9 M
-26:1 (Primary Baseline)       0.0401       1,679     2,909      81.82%           79.85%             $4,074.1 M             $1,822.4 M
-50:1 ($5,000k / $100k)        0.0163       1,812     5,206      88.30%           89.37%             $8,539.4 M             $3,999.4 M
+26:1 (Primary Baseline)       0.0401       1,679     2,909      81.82%           79.85%             $4,074.1 M             $1,891.6 M
+50:1 ($5,000k / $100k)        0.0163       1,812     5,206      88.30%           89.37%             $8,539.4 M             $4,009.4 M
 100:1 ($10,000k / $100k)      0.0115       1,844     6,323      89.86%           91.07%            $17,807.7 M             $8,587.7 M
 250:1 ($25,000k / $100k)      0.0020       1,947    15,969      94.88%           96.98%            $47,078.1 M            $22,740.6 M
 ===================================================================================================================
@@ -680,7 +681,7 @@ liquid_to_asset            L    (CHBAL + SC) / ASSET                     0.00%  
 cash_to_asset              L    CHBAL / ASSET                            0.00%       0.04158           0.04720         0.5643   (-)
 loans_to_deposits          L    LNLSGR / DEP                             0.62%       0.70596           0.68855         0.5177   (+)
 bro_to_dep                 L    BRO / DEP                                1.90%       0.00000           0.00000         0.6186   (+)
-non_deposit_funding_to_ast L    (ASSET - EQ - DEP) / ASSET               0.24%       0.03065           0.01697         0.5987   (+)
+non_deposit_funding_to_asset L  (ASSET - EQ - DEP) / ASSET               0.24%       0.03065           0.01697         0.5987   (+)
 eq_to_asset_diff_4q        S    eq_to_asset - eq_to_asset_{t-4}          8.00%      -0.03051           0.00088         0.8672   (-)
 npl_to_loans_diff_4q       S    npl_to_loans - npl_to_loans_{t-4}        8.81%       0.01759          -0.00009         0.6500   (+)
 liquid_to_asset_diff_4q    S    liquid_to_asset - liquid_to_asset_{t-4}  7.78%      -0.00185          -0.00559         0.5143   (+)
@@ -765,7 +766,7 @@ All code is fully deterministic and pinned in `requirements.txt`:
 - **Core Big Data & Manipulation:** `pandas==2.3.3`, `numpy==2.4.2`, `polars==2.1.0`, `pyarrow==23.0.1`, `fastparquet==2026.5.0`.
 - **Machine Learning & Modeling:** `scikit-learn==1.8.0`, `lightgbm==4.7.0`, `scipy==1.17.1`.
 - **Distributed Computing:** `pyspark==4.3.0` (with Java Virtual Machine JVM OpenJDK 64-Bit Server).
-- **Visualization:** `matplotlib==3.10.8`, `seaborn==0.13.2`.
+- **Visualization & Reporting:** `matplotlib==3.10.8`, `seaborn==0.13.2`, `openpyxl==3.1.5`, `python-docx==1.2.0`.
 - **System Telemetry:** `psutil==7.2.2`.
 
 ### 8.3 AI Tool Transparency Statement

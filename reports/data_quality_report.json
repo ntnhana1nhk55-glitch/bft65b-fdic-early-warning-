@@ -114,6 +114,6 @@
     "Negative equity (EQ < 0) occurred in 15,659 bank-quarters. This is genuine technical insolvency prior to resolution; dropping them would cause catastrophic survivorship bias.",
     "YTD flow accumulation verified: median NETINC scales steadily from Q1 ($k) to Q4 ($k), while ROA remains flat/annualized. Downstream Part 4 feature engineering must de-cumulate flows or prioritize annualized ratios.",
     "Post-terminal FAILURE filings: 1,185 residual receivership rows dropped in Silver layer.",
-    "Post-ASSISTANCE operating quarters: 4,425 valid open-bank operating quarters retained (preserving 41 subsequent failure events)."
+    "Post-ASSISTANCE operating quarters: 4,425 valid open-bank operating quarters retained (preserving 37 subsequent terminal failure banks)."
   ]
 }

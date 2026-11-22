@@ -341,7 +341,7 @@ def run_quality_audit() -> dict[str, Any]:
             f"Negative equity (EQ < 0) occurred in {anomalies_dict['negative_equity_insolvent']:,} bank-quarters. This is genuine technical insolvency prior to resolution; dropping them would cause catastrophic survivorship bias.",
             f"YTD flow accumulation verified: median NETINC scales steadily from Q1 ($k) to Q4 ($k), while ROA remains flat/annualized. Downstream Part 4 feature engineering must de-cumulate flows or prioritize annualized ratios.",
             f"Post-terminal FAILURE filings: {post_terminal_count:,} residual receivership rows dropped in Silver layer.",
-            f"Post-ASSISTANCE operating quarters: {post_assist_count:,} valid open-bank operating quarters retained (preserving 41 subsequent failure events).",
+            f"Post-ASSISTANCE operating quarters: {post_assist_count:,} valid open-bank operating quarters retained (preserving 37 subsequent terminal failure banks).",
         ],
     }
 
