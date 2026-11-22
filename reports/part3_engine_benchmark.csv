@@ -1,0 +1,7 @@
+workload,engine,runs_count,median_ms,mean_ms,std_ms,min_ms,max_ms,peak_rss_mb,delta_rss_mb,speedup_vs_pandas
+End-to-End,Pandas (Vectorized),5,9154.08,9110.35,72.87,9016.79,9196.56,2919.61,163.75,1.0
+End-to-End,Polars (Eager),5,2512.86,2529.66,90.15,2430.33,2689.28,3757.09,69.12,3.64
+End-to-End,Polars (Lazy),5,1140.23,1195.05,131.49,1108.66,1456.24,4154.97,212.0,8.03
+Selective-Pushdown,Pandas (Vectorized),5,1749.68,1740.85,24.11,1706.31,1775.2,4012.39,61.19,1.0
+Selective-Pushdown,Polars (Eager),5,158.46,183.06,54.22,153.0,291.41,3079.82,97.02,11.04
+Selective-Pushdown,Polars (Lazy),5,43.43,52.46,18.08,42.04,88.55,2827.81,5.08,40.29

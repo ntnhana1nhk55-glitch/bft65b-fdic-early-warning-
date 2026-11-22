@@ -1,0 +1,174 @@
+{
+  "status": "SUCCESS",
+  "timestamp": "2026-11-09 23:56:19",
+  "audit_duration_seconds": 64.74,
+  "total_gold_rows": 1663902,
+  "splits_breakdown": {
+    "dev": {
+      "rows": 1193702,
+      "fails": 10225,
+      "fail_rate_pct": 0.8566,
+      "certs": 23622,
+      "min_date": "1984-03-31",
+      "max_date": "2006-12-31"
+    },
+    "embargo": {
+      "rows": 34754,
+      "fails": 53,
+      "fail_rate_pct": 0.1525,
+      "certs": 8892,
+      "min_date": "2007-03-31",
+      "max_date": "2007-12-31"
+    },
+    "test": {
+      "rows": 212645,
+      "fails": 2052,
+      "fail_rate_pct": 0.965,
+      "certs": 8709,
+      "min_date": "2008-03-31",
+      "max_date": "2014-12-31"
+    },
+    "post_test": {
+      "rows": 222801,
+      "fails": 129,
+      "fail_rate_pct": 0.0579,
+      "certs": 6585,
+      "min_date": "2015-03-31",
+      "max_date": "2025-06-30"
+    }
+  },
+  "features": {
+    "numeric_count": 39,
+    "categorical_count": 1,
+    "total_model_features": 40,
+    "one_hot_encoded_feature_count": 49,
+    "camels_pillar_counts": {
+      "C": 6,
+      "A": 8,
+      "M": 7,
+      "E": 6,
+      "L": 5,
+      "S": 7
+    }
+  },
+  "anti_leakage_perturbation_proof": {
+    "method": "Multiplied X_test numeric features by 1,000,000 and injected 50% random NaNs",
+    "delta_winsorizer_lower": 0.0,
+    "delta_winsorizer_upper": 0.0,
+    "delta_imputer_medians": 0.0,
+    "delta_robust_scaler_center": 0.0,
+    "delta_robust_scaler_scale": 0.0,
+    "max_absolute_difference": 0.0,
+    "proof_verdict": "ZERO LEAKAGE (max_abs_diff == 0.0)"
+  },
+  "top_10_dev_predictive_features": [
+    {
+      "rank": 1,
+      "pillar": "C",
+      "feature": "total_rbc_ratio",
+      "display_name": "Total Risk-Based Capital Ratio",
+      "univariate_auc": 0.9602,
+      "direction": "-",
+      "healthy_median": 15.411127,
+      "failing_median": 2.820922
+    },
+    {
+      "rank": 2,
+      "pillar": "A",
+      "feature": "texas_ratio_proxy",
+      "display_name": "Texas Ratio Proxy",
+      "univariate_auc": 0.9597,
+      "direction": "+",
+      "healthy_median": 0.076762,
+      "failing_median": 4.098624
+    },
+    {
+      "rank": 3,
+      "pillar": "C",
+      "feature": "eq_to_asset",
+      "display_name": "Equity to Assets",
+      "univariate_auc": 0.9516,
+      "direction": "-",
+      "healthy_median": 0.08714,
+      "failing_median": 0.007356
+    },
+    {
+      "rank": 4,
+      "pillar": "C",
+      "feature": "tier1_leverage_ratio",
+      "display_name": "Tier 1 Leverage Ratio",
+      "univariate_auc": 0.9501,
+      "direction": "-",
+      "healthy_median": 8.762775,
+      "failing_median": 1.70434
+    },
+    {
+      "rank": 5,
+      "pillar": "S",
+      "feature": "roa_rolling_4q_mean",
+      "display_name": "ROA Trailing 4Q Mean",
+      "univariate_auc": 0.9436,
+      "direction": "-",
+      "healthy_median": 1.020971,
+      "failing_median": -2.160071
+    },
+    {
+      "rank": 6,
+      "pillar": "C",
+      "feature": "equity_to_loans",
+      "display_name": "Equity to Gross Loans",
+      "univariate_auc": 0.9374,
+      "direction": "-",
+      "healthy_median": 0.148757,
+      "failing_median": 0.011354
+    },
+    {
+      "rank": 7,
+      "pillar": "E",
+      "feature": "roa",
+      "display_name": "Return on Assets (Annualized)",
+      "univariate_auc": 0.9291,
+      "direction": "-",
+      "healthy_median": 1.018116,
+      "failing_median": -2.639037
+    },
+    {
+      "rank": 8,
+      "pillar": "S",
+      "feature": "roa_rolling_4q_std",
+      "display_name": "ROA Trailing 4Q Volatility",
+      "univariate_auc": 0.9071,
+      "direction": "+",
+      "healthy_median": 0.154065,
+      "failing_median": 1.536924
+    },
+    {
+      "rank": 9,
+      "pillar": "A",
+      "feature": "npl_to_loans",
+      "display_name": "NPL to Loans Ratio",
+      "univariate_auc": 0.9061,
+      "direction": "+",
+      "healthy_median": 0.009829,
+      "failing_median": 0.092423
+    },
+    {
+      "rank": 10,
+      "pillar": "E",
+      "feature": "netinc_q_to_assets",
+      "display_name": "Quarterly Net Income to Assets",
+      "univariate_auc": 0.9057,
+      "direction": "-",
+      "healthy_median": 0.010004,
+      "failing_median": -0.026402
+    }
+  ],
+  "preprocessing_pipeline_architecture": [
+    "Numeric: TrainQuantileWinsorizer(lower=0.005, upper=0.995)",
+    "Numeric: RobustScaler(with_centering=True, with_scaling=True) on observed non-null training values",
+    "Numeric: SimpleImputer(strategy='median') -> fills NaNs with 0.0 (exact centered training median)",
+    "Categorical: SimpleImputer(strategy='constant', fill_value='MISSING')",
+    "Categorical: OneHotEncoder(handle_unknown='ignore', sparse_output=False)",
+    "All parameters fitted STRICTLY on dev fold (repdte_date <= 2006-12-31)"
+  ]
+}

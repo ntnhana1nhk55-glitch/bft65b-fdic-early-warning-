@@ -1,0 +1,91 @@
+{
+  "verified_sample_files": "F:\\hoc\\ki 1 nam 4\\Big Data\\Du an cuoi ki\\data\\raw\\financials\\REPDTE=*.parquet",
+  "panel_row_count": 1681431,
+  "peer_row_count": 9605,
+  "tolerance": 1e-08,
+  "overall_status": "ALL_VERIFICATIONS_PASSED",
+  "column_metrics": {
+    "netinc_q": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "eq_to_asset": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "npl_to_loans": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "reserve_to_loans": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "liquid_to_asset": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "bro_to_dep": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "asset_growth_4q": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "eq_to_asset_diff_4q": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "roa_rolling_4q_mean": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "status": "PASS (Exact match < 1e-8)"
+    },
+    "roa_rolling_4q_std": {
+      "null_mask_match": true,
+      "max_abs_diff": 5.684341886080802e-14,
+      "mean_abs_diff": 9.70257882306397e-18,
+      "status": "PASS (Exact match < 1e-8)"
+    }
+  },
+  "peer_metrics": {
+    "peer_bank_count": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "status": "PASS"
+    },
+    "peer_total_assets": {
+      "null_mask_match": true,
+      "max_abs_diff": 0.0,
+      "status": "PASS"
+    },
+    "peer_mean_roa": {
+      "null_mask_match": true,
+      "max_abs_diff": 3.552713678800501e-15,
+      "status": "PASS"
+    },
+    "peer_mean_eq_to_asset": {
+      "null_mask_match": true,
+      "max_abs_diff": 2.7755575615628914e-16,
+      "status": "PASS"
+    }
+  }
+}

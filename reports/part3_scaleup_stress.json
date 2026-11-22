@@ -1,0 +1,64 @@
+{
+  "host_ram_total_gb": 15.63,
+  "measured_polars_ram_to_snappy_parquet_ratio": 4.1,
+  "pandas_ram_limit_rows_million": 5.0,
+  "laptop_16gb_break_even_disk_size_gb": 2.36,
+  "laptop_16gb_break_even_rows_million": 19.6,
+  "server_128gb_cluster_break_even_disk_size_gb": 23.4,
+  "server_128gb_cluster_break_even_rows_million": 194.0,
+  "derivation_reasoning": "Empirical measurements on this 15.63 GiB laptop show three distinct regimes: (1) Pandas hits RAM exhaustion (~5.5x expansion) above ~5M rows (~0.6 GB Snappy Parquet), failing at 5x (8.41M rows, needing 9.31 GB); (2) Polars Lazy handles 10x (16.83M rows, 2.03 GB Snappy Parquet) in 39.77s at 8.36 GB Peak RSS (~4.1x Parquet expansion due to full-panel sort + over(CERT) window frames), with latency bending super-linearly between 5x (8.02s) and 10x (39.77s) as OS virtual-memory paging begins near ~2.36 GB Parquet (~19.6M rows); (3) Scaling vertically to a 128 GB workstation extends single-node Polars to ~23.4 GB Parquet (~194.0M rows), beyond which (e.g., granular loan-level credit registry feeds) a multi-node PySpark cluster is objectively justified.",
+  "stress_test_table": [
+    {
+      "scale_factor": "1x",
+      "scale_multiplier": 1,
+      "dataset_rows": 1682616,
+      "dataset_disk_mb": 241.88,
+      "dataset_disk_gb": 0.236,
+      "polars_time_sec": 1.09,
+      "polars_peak_rss_mb": 4550.09,
+      "pandas_status": "SUCCESS",
+      "pandas_time_sec": 10.87,
+      "pandas_peak_rss_mb": 6273.79,
+      "speedup_polars_vs_pandas": 9.99
+    },
+    {
+      "scale_factor": "2x",
+      "scale_multiplier": 2,
+      "dataset_rows": 3365232,
+      "dataset_disk_mb": 411.85,
+      "dataset_disk_gb": 0.402,
+      "polars_time_sec": 2.57,
+      "polars_peak_rss_mb": 5259.95,
+      "pandas_status": "SUCCESS",
+      "pandas_time_sec": 19.77,
+      "pandas_peak_rss_mb": 7470.28,
+      "speedup_polars_vs_pandas": 7.7
+    },
+    {
+      "scale_factor": "5x",
+      "scale_multiplier": 5,
+      "dataset_rows": 8413080,
+      "dataset_disk_mb": 1017.15,
+      "dataset_disk_gb": 0.993,
+      "polars_time_sec": 8.02,
+      "polars_peak_rss_mb": 7908.22,
+      "pandas_status": "SKIPPED_RAM_CONSTRAINED",
+      "pandas_time_sec": null,
+      "pandas_peak_rss_mb": null,
+      "speedup_polars_vs_pandas": null
+    },
+    {
+      "scale_factor": "10x",
+      "scale_multiplier": 10,
+      "dataset_rows": 16826160,
+      "dataset_disk_mb": 2029.09,
+      "dataset_disk_gb": 1.982,
+      "polars_time_sec": 39.77,
+      "polars_peak_rss_mb": 8362.85,
+      "pandas_status": "SKIPPED_RAM_CONSTRAINED",
+      "pandas_time_sec": null,
+      "pandas_peak_rss_mb": null,
+      "speedup_polars_vs_pandas": null
+    }
+  ]
+}

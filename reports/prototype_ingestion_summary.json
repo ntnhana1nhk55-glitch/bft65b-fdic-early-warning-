@@ -1,0 +1,161 @@
+{
+  "financials_2023": {
+    "total_rows": 18798,
+    "distinct_cert": 4749,
+    "n_duplicates_cert_repdte": 0,
+    "quarters_downloaded": [
+      "20230331",
+      "20230630",
+      "20230930",
+      "20231231"
+    ],
+    "quarters_detail": {
+      "20230331": {
+        "rows": 4740,
+        "distinct_cert": 4740,
+        "file_size_bytes": 803996
+      },
+      "20230630": {
+        "rows": 4714,
+        "distinct_cert": 4714,
+        "file_size_bytes": 820014
+      },
+      "20230930": {
+        "rows": 4686,
+        "distinct_cert": 4686,
+        "file_size_bytes": 828235
+      },
+      "20231231": {
+        "rows": 4658,
+        "distinct_cert": 4658,
+        "file_size_bytes": 833190
+      }
+    }
+  },
+  "failures": {
+    "total_rows": 4117,
+    "distinct_cert_non_null": 3585,
+    "null_cert_count": 488,
+    "null_cert_in_1984_plus": 0,
+    "min_faildate": "1934-04-19",
+    "max_faildate": "2026-07-17",
+    "temporal_breakdown": {
+      "pre_1984_count": 842,
+      "exam_scope_1984_01_01_to_2026_06_30": 3273,
+      "dev_period_1984_01_01_to_2006_12_31": 2710,
+      "dev_period_1984_03_31_to_2006_12_31": 2694,
+      "embargo_period_2007_01_01_to_2007_12_31": 3,
+      "test_period_2008_01_01_to_2014_12_31": 520,
+      "post_test_period_2015_01_01_to_2026_06_30": 40,
+      "post_scope_after_2026_06_30": 2
+    },
+    "failures_2023_list": [
+      {
+        "CERT": 24735,
+        "NAME": "SILICON VALLEY BANK",
+        "FAILDATE": "3/10/2023",
+        "QBFASSET_thousands": 209026000.0,
+        "COST_thousands": 18744254.463
+      },
+      {
+        "CERT": 57053,
+        "NAME": "SIGNATURE BANK",
+        "FAILDATE": "3/12/2023",
+        "QBFASSET_thousands": 110363650.0,
+        "COST_thousands": 0.0
+      },
+      {
+        "CERT": 59017,
+        "NAME": "FIRST REPUBLIC BANK",
+        "FAILDATE": "5/1/2023",
+        "QBFASSET_thousands": 212638872.0,
+        "COST_thousands": 15495761.533
+      },
+      {
+        "CERT": 25851,
+        "NAME": "HEARTLAND TRI-STATE BANK",
+        "FAILDATE": "7/28/2023",
+        "QBFASSET_thousands": 139446.0,
+        "COST_thousands": 42666.372
+      },
+      {
+        "CERT": 8758,
+        "NAME": "CITIZENS BANK",
+        "FAILDATE": "11/3/2023",
+        "QBFASSET_thousands": 60448.0,
+        "COST_thousands": 12464.63
+      }
+    ],
+    "cost_distribution": {
+      "overall_1984_plus": {
+        "total_rows": 3275,
+        "non_null_count": 3233,
+        "null_count": 42,
+        "mean": 88633.41250703909,
+        "std": 540346.1008855664,
+        "median": 12244.9,
+        "iqr": 41625.431000000004,
+        "p90": 140877.8704160003,
+        "p99": 1212734.6713879844,
+        "max": 18744254.463
+      },
+      "dev_1984_01_01_to_2006_12_31": {
+        "total_rows": 2710,
+        "non_null_count": 2681,
+        "null_count": 29,
+        "mean": 66968.66900046899,
+        "std": 247952.09094679297,
+        "median": 8867.94696,
+        "iqr": 30561.576419999998,
+        "p90": 119149.88403,
+        "p99": 1129131.7999999956,
+        "max": 5369617.0
+      },
+      "dev_1984_03_31_to_2006_12_31": {
+        "total_rows": 2694,
+        "non_null_count": 2666,
+        "null_count": 28,
+        "mean": 67220.33252447762,
+        "std": 248577.6393538543,
+        "median": 8976.826285,
+        "iqr": 30888.971017499996,
+        "p90": 119215.75409500001,
+        "p99": 1132681.3999999978,
+        "max": 5369617.0
+      }
+    }
+  },
+  "institutions": {
+    "total_rows": 27835,
+    "distinct_cert": 27835,
+    "active_value_counts": {
+      "0": 23623,
+      "1": 4212
+    },
+    "top_15_changec1_exit_codes": {
+      "223": 17699,
+      "null": 3482,
+      "211": 2538,
+      "221": 816,
+      "217": 666,
+      "240": 575,
+      "213": 567,
+      "810": 301,
+      "230": 236,
+      "520": 203,
+      "224": 191,
+      "222": 173,
+      "235": 110,
+      "510": 109,
+      "820": 52
+    }
+  },
+  "pipeline_audit_notes": [
+    "All 4 quarters of 2023 downloaded with 100% row match against API total and zero duplicates.",
+    "All failures from 1984 to 2026 have valid non-null CERTs; 488 null CERTs belong strictly to pre-1984 records.",
+    "Institutions table has exactly 1 row per distinct CERT (27,835 unique banks), with 4,212 active and 23,623 inactive.",
+    "Top exit code CHANGEC1 is 223 (17,699 banks, merger without assistance), confirming mergers dominate bank disappearances.",
+    "In 2023, exactly 5 bank failures occurred: Silicon Valley Bank, Signature Bank, First Republic Bank, Heartland Tri-State Bank, and Citizens Bank.",
+    "COST distribution is heavily right-skewed with median of $12.2M and max of $18.74B (SVB)."
+  ]
+}

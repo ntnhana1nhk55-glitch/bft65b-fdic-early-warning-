@@ -1,0 +1,39 @@
+{
+  "dataset_rows": 1682616,
+  "institutions_rows": 27835,
+  "failures_rows": 4117,
+  "sort_merge_join": {
+    "strategy": "SortMergeJoin",
+    "shuffle_exchange_present": true,
+    "median_ms": 4035.05,
+    "runs_ms": [
+      4496.72,
+      4035.05,
+      3715.7
+    ]
+  },
+  "broadcast_hash_join": {
+    "strategy": "BroadcastHashJoin",
+    "shuffle_exchange_present": false,
+    "median_ms": 1180.76,
+    "runs_ms": [
+      1202.07,
+      1092.81,
+      1180.76
+    ]
+  },
+  "broadcast_speedup_factor": 3.42,
+  "catalyst_analysis": {
+    "narrow_transformations": [
+      "Filter (ASSET > 0)",
+      "Project / Column Derivations (repdte_date, year, quarter, q_idx)",
+      "BroadcastHashJoin (streamed side probe into in-memory hash table)"
+    ],
+    "wide_transformations": [
+      "SortMergeJoin (Exchange hashpartitioning by CERT + Sort)",
+      "Window partitionBy(CERT) (Exchange hashpartitioning by CERT + Sort)",
+      "groupBy(REPDTE, STNAME) (HashAggregate -> Exchange hashpartitioning -> HashAggregate)"
+    ],
+    "optimization_takeaway": "Broadcasting small lookup tables (< 30k rows) avoids an Exchange shuffle on 1.68M rows, reducing network I/O, disk spill, and execution latency significantly."
+  }
+}

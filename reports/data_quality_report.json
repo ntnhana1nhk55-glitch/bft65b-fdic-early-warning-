@@ -1,0 +1,119 @@
+{
+  "panel_coverage": {
+    "total_rows": 1682616,
+    "distinct_certs": 24064,
+    "total_quarters": 170,
+    "earliest_quarter": "19840331",
+    "latest_quarter": "20260630",
+    "duplicate_cert_repdte": 0,
+    "banks_with_internal_timeline_gaps": 32,
+    "total_gap_instances": 33,
+    "min_banks_quarter": {
+      "quarter": "20260630",
+      "active_banks": 4313
+    },
+    "max_banks_quarter": {
+      "quarter": "19860331",
+      "active_banks": 18133
+    }
+  },
+  "regulatory_schema_evolution": {
+    "rbc1aaj_first_available_quarter": "19840331",
+    "rbcrwaj_first_available_quarter": "19900331",
+    "overall_field_missingness_pct": {
+      "CERT": 0.0,
+      "REPDTE": 0.0,
+      "STNAME": 0.0,
+      "ASSET": 0.0,
+      "DEP": 0.0,
+      "DEPDOM": 0.0,
+      "EQ": 0.247,
+      "BRO": 0.996,
+      "CHBAL": 0.0,
+      "SC": 0.0,
+      "LNLSGR": 0.0,
+      "LNLSNET": 0.0,
+      "LNRE": 0.0,
+      "LNCI": 0.0,
+      "LNCON": 0.234,
+      "LNATRES": 0.247,
+      "NCLNLS": 0.149,
+      "P3ASSET": 57.763,
+      "P9ASSET": 4.62,
+      "NAASSET": 4.62,
+      "NTLNLS": 4.75,
+      "ORE": 0.247,
+      "NETINC": 0.279,
+      "INTINC": 0.279,
+      "EINTEXP": 0.383,
+      "NONII": 0.279,
+      "NONIX": 0.279,
+      "ELNATR": 2.565,
+      "ROA": 0.0,
+      "ROE": 1.114,
+      "NIMY": 0.0,
+      "RBC1AAJ": 0.0,
+      "RBCRWAJ": 0.0
+    }
+  },
+  "domain_accounting_anomalies": {
+    "non_positive_assets": 0,
+    "negative_deposits": 0,
+    "negative_gross_loans": 32,
+    "negative_loan_loss_reserves": 9,
+    "negative_equity_insolvent": 15659,
+    "domestic_dep_gt_total_dep": 0,
+    "chargeoffs_gt_gross_loans": 37,
+    "net_loans_gt_gross_loans": 15,
+    "extreme_roa_abs_gt_100": 244,
+    "extreme_roe_abs_gt_500": 1486
+  },
+  "ytd_income_statement_progression": {
+    "Q1 (Mar 31)": {
+      "median_netinc": 181.0,
+      "median_intinc": 1400.0,
+      "median_roa": 0.97,
+      "median_nimy": 4.01,
+      "count": 427873
+    },
+    "Q2 (Jun 30)": {
+      "median_netinc": 373.0,
+      "median_intinc": 2868.0,
+      "median_roa": 0.99,
+      "median_nimy": 4.04,
+      "count": 424438
+    },
+    "Q3 (Sep 30)": {
+      "median_netinc": 542.0,
+      "median_intinc": 4200.0,
+      "median_roa": 0.99,
+      "median_nimy": 4.06,
+      "count": 417003
+    },
+    "Q4 (Dec 31)": {
+      "median_netinc": 683.0,
+      "median_intinc": 5616.0,
+      "median_roa": 0.94,
+      "median_nimy": 4.06,
+      "count": 413302
+    }
+  },
+  "post_failure_and_assistance_filings": {
+    "post_terminal_failure_filings_dropped": {
+      "rows": 1185,
+      "distinct_banks": 270
+    },
+    "post_assistance_operating_quarters_retained": {
+      "rows": 4425,
+      "distinct_banks": 202
+    }
+  },
+  "critical_pipeline_takeaways": [
+    "Zero duplicate (CERT, REPDTE) verified across all 1,682,616 panel rows.",
+    "Regulatory capital ratios: Tier 1 leverage (RBC1AAJ) appears in 19840331 and risk-based capital (RBCRWAJ) first appears in quarter 19900331 (Basel I adoption); all earlier quarters are legitimately null and require missing indicator in feature engineering.",
+    "Negative equity (EQ < 0) occurred in 15,659 bank-quarters. This is genuine technical insolvency prior to resolution; dropping them would cause catastrophic survivorship bias.",
+    "YTD flow accumulation verified: median NETINC scales steadily from Q1 ($k) to Q4 ($k), while ROA remains flat/annualized. Downstream Part 4 feature engineering must de-cumulate flows or prioritize annualized ratios.",
+    "Post-terminal FAILURE filings: 1,185 residual receivership rows dropped in Silver layer.",
+    "Post-ASSISTANCE operating quarters: 4,425 valid open-bank operating quarters retained (preserving 41 subsequent failure events)."
+  ]
+}

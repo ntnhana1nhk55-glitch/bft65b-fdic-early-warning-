@@ -1,0 +1,26 @@
+# Core Data Manipulation & Big Data (Pinned Exact Versions for End-to-End Reproducibility)
+pandas==2.3.3
+numpy==2.4.2
+polars==2.1.0
+pyarrow==23.0.1
+fastparquet==2026.5.0
+
+# HTTP & API Acquisition
+requests==2.33.1
+
+# Machine Learning & Scientific Computing
+scipy==1.17.1
+scikit-learn==1.8.0
+lightgbm==4.7.0
+
+# System & Memory Profiling
+psutil==7.2.2
+
+# Visualization & Reporting
+matplotlib==3.10.8
+seaborn==0.13.2
+openpyxl==3.1.5
+python-docx==1.2.0
+
+# Distributed Computing (Apache Spark / PySpark MLlib)
+pyspark==4.3.0

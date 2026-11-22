@@ -1,0 +1,33 @@
+# ==============================================================================
+# Mandatory Exam Rule: DO NOT COMMIT DATA FILES
+# Leading slash ensures ONLY root /data/ is ignored, NOT src/data/!
+# ==============================================================================
+/data/
+*.parquet
+*.feather
+*.arrow
+
+# ==============================================================================
+# Local Audit Helpers & Working Files (Kept Locally, Excluded from GitHub)
+# ==============================================================================
+/_local_audit_tools/
+/agents/
+/final_report_bft65b.pdf
+/bft65b-fdic-early-warning,/
+~$*.docx
+*.tmp
+
+# ==============================================================================
+# Python & Environment Artifacts
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db

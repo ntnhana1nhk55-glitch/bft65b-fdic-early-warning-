@@ -1,0 +1,416 @@
+================================================================================
+PYSPARK CATALYST OPTIMIZER PHYSICAL EXECUTION PLANS
+Course: BFT65B - Big Data Analytics in Finance
+================================================================================
+
+################################################################################
+1. STRATEGY A: SORT-MERGE JOIN (autoBroadcastJoinThreshold = -1 & AQE broadcast = -1)
+   Note: Forces Exchange hashpartitioning shuffle and Sort on the 1.68M-row fact table!
+################################################################################
+== Parsed Logical Plan ==
+'Project ['count(1) AS n_rows#54, 'count('BKCLASS) AS n_bk#55, 'sum('COST) AS total_cost#56]
++- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 11 more fields]
+   +- Join LeftOuter, (CERT#18L = CERT#9L)
+      :- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 9 more fields]
+      :  +- Join LeftOuter, (CERT#18L = CERT#0L)
+      :     :- Filter (ASSET#21 > cast(0 as double))
+      :     :  +- Relation [CERT#18L,REPDTE#19,STNAME#20,ASSET#21,DEP#22,DEPDOM#23,EQ#24,BRO#25,CHBAL#26,SC#27,LNLSGR#28,LNLSNET#29,LNRE#30,LNCI#31,LNCON#32,LNATRES#33,NCLNLS#34,P3ASSET#35,P9ASSET#36,NAASSET#37,NTLNLS#38,ORE#39,NETINC#40,INTINC#41,EINTEXP#42,... 8 more fields] parquet
+      :     +- Project [CERT#0L, BKCLASS#3]
+      :        +- Relation [CERT#0L,NAME#1,STNAME#2,BKCLASS#3,ACTIVE#4L,ESTYMD#5,ENDEFYMD#6,CHANGEC1#7,INSDATE#8] parquet
+      +- Project [CERT#9L, FAILDATE#12, COST#14]
+         +- Relation [CERT#9L,NAME#10,CITYST#11,FAILDATE#12,FAILYR#13L,COST#14,QBFASSET#15,QBFDEP#16,RESTYPE#17] parquet
+
+== Analyzed Logical Plan ==
+n_rows: bigint, n_bk: bigint, total_cost: double
+Aggregate [count(1) AS n_rows#54L, count(BKCLASS#3) AS n_bk#55L, sum(COST#14) AS total_cost#56]
++- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 11 more fields]
+   +- Join LeftOuter, (CERT#18L = CERT#9L)
+      :- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 9 more fields]
+      :  +- Join LeftOuter, (CERT#18L = CERT#0L)
+      :     :- Filter (ASSET#21 > cast(0 as double))
+      :     :  +- Relation [CERT#18L,REPDTE#19,STNAME#20,ASSET#21,DEP#22,DEPDOM#23,EQ#24,BRO#25,CHBAL#26,SC#27,LNLSGR#28,LNLSNET#29,LNRE#30,LNCI#31,LNCON#32,LNATRES#33,NCLNLS#34,P3ASSET#35,P9ASSET#36,NAASSET#37,NTLNLS#38,ORE#39,NETINC#40,INTINC#41,EINTEXP#42,... 8 more fields] parquet
+      :     +- Project [CERT#0L, BKCLASS#3]
+      :        +- Relation [CERT#0L,NAME#1,STNAME#2,BKCLASS#3,ACTIVE#4L,ESTYMD#5,ENDEFYMD#6,CHANGEC1#7,INSDATE#8] parquet
+      +- Project [CERT#9L, FAILDATE#12, COST#14]
+         +- Relation [CERT#9L,NAME#10,CITYST#11,FAILDATE#12,FAILYR#13L,COST#14,QBFASSET#15,QBFDEP#16,RESTYPE#17] parquet
+
+== Optimized Logical Plan ==
+Aggregate [count(1) AS n_rows#54L, count(BKCLASS#3) AS n_bk#55L, sum(COST#14) AS total_cost#56]
++- Project [BKCLASS#3, COST#14]
+   +- Join LeftOuter, (CERT#18L = CERT#9L)
+      :- Project [CERT#18L, BKCLASS#3]
+      :  +- Join LeftOuter, (CERT#18L = CERT#0L)
+      :     :- Project [CERT#18L]
+      :     :  +- Filter (isnotnull(ASSET#21) AND (ASSET#21 > 0.0))
+      :     :     +- Relation [CERT#18L,REPDTE#19,STNAME#20,ASSET#21,DEP#22,DEPDOM#23,EQ#24,BRO#25,CHBAL#26,SC#27,LNLSGR#28,LNLSNET#29,LNRE#30,LNCI#31,LNCON#32,LNATRES#33,NCLNLS#34,P3ASSET#35,P9ASSET#36,NAASSET#37,NTLNLS#38,ORE#39,NETINC#40,INTINC#41,EINTEXP#42,... 8 more fields] parquet
+      :     +- Project [CERT#0L, BKCLASS#3]
+      :        +- Filter isnotnull(CERT#0L)
+      :           +- Relation [CERT#0L,NAME#1,STNAME#2,BKCLASS#3,ACTIVE#4L,ESTYMD#5,ENDEFYMD#6,CHANGEC1#7,INSDATE#8] parquet
+      +- Project [CERT#9L, COST#14]
+         +- Filter isnotnull(CERT#9L)
+            +- Relation [CERT#9L,NAME#10,CITYST#11,FAILDATE#12,FAILYR#13L,COST#14,QBFASSET#15,QBFDEP#16,RESTYPE#17] parquet
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- HashAggregate(keys=[], functions=[count(1), count(BKCLASS#3), sum(COST#14)], output=[n_rows#54L, n_bk#55L, total_cost#56])
+   +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=68]
+      +- HashAggregate(keys=[], functions=[partial_count(1), partial_count(BKCLASS#3), partial_sum(COST#14)], output=[count#63L, count#64L, sum#65])
+         +- Project [BKCLASS#3, COST#14]
+            +- SortMergeJoin [CERT#18L], [CERT#9L], LeftOuter
+               :- Project [CERT#18L, BKCLASS#3]
+               :  +- SortMergeJoin [CERT#18L], [CERT#0L], LeftOuter
+               :     :- Sort [CERT#18L ASC NULLS FIRST], false, 0
+               :     :  +- Exchange hashpartitioning(CERT#18L, 200), ENSURE_REQUIREMENTS, [plan_id=54]
+               :     :     +- Project [CERT#18L]
+               :     :        +- Filter (isnotnull(ASSET#21) AND (ASSET#21 > 0.0))
+               :     :           +- FileScan parquet [CERT#18L,ASSET#21] Batched: true, DataFilters: [isnotnull(ASSET#21), (ASSET#21 > 0.0)], Format: Parquet, Location: InMemoryFileIndex(170 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/financials/R..., PartitionFilters: [], PushedFilters: [IsNotNull(ASSET), GreaterThan(ASSET,0.0)], ReadSchema: struct<CERT:bigint,ASSET:double>
+               :     +- Sort [CERT#0L ASC NULLS FIRST], false, 0
+               :        +- Exchange hashpartitioning(CERT#0L, 200), ENSURE_REQUIREMENTS, [plan_id=55]
+               :           +- Filter isnotnull(CERT#0L)
+               :              +- FileScan parquet [CERT#0L,BKCLASS#3] Batched: true, DataFilters: [isnotnull(CERT#0L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/institutions.p..., PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,BKCLASS:string>
+               +- Sort [CERT#9L ASC NULLS FIRST], false, 0
+                  +- Exchange hashpartitioning(CERT#9L, 200), ENSURE_REQUIREMENTS, [plan_id=62]
+                     +- Filter isnotnull(CERT#9L)
+                        +- FileScan parquet [CERT#9L,COST#14] Batched: true, DataFilters: [isnotnull(CERT#9L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/failures.parquet], PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,COST:double>
+
+
+################################################################################
+2. STRATEGY B: BROADCAST HASH JOIN (Explicit F.broadcast)
+   Note: Replicates small metadata tables to all nodes, completely eliminating Exchange shuffle!
+################################################################################
+== Parsed Logical Plan ==
+'Project ['count(1) AS n_rows#66, 'count('BKCLASS) AS n_bk#67, 'sum('COST) AS total_cost#68]
++- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 11 more fields]
+   +- Join LeftOuter, (CERT#18L = CERT#9L)
+      :- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 9 more fields]
+      :  +- Join LeftOuter, (CERT#18L = CERT#0L)
+      :     :- Filter (ASSET#21 > cast(0 as double))
+      :     :  +- Relation [CERT#18L,REPDTE#19,STNAME#20,ASSET#21,DEP#22,DEPDOM#23,EQ#24,BRO#25,CHBAL#26,SC#27,LNLSGR#28,LNLSNET#29,LNRE#30,LNCI#31,LNCON#32,LNATRES#33,NCLNLS#34,P3ASSET#35,P9ASSET#36,NAASSET#37,NTLNLS#38,ORE#39,NETINC#40,INTINC#41,EINTEXP#42,... 8 more fields] parquet
+      :     +- ResolvedHint (strategy=broadcast)
+      :        +- Project [CERT#0L, BKCLASS#3]
+      :           +- Relation [CERT#0L,NAME#1,STNAME#2,BKCLASS#3,ACTIVE#4L,ESTYMD#5,ENDEFYMD#6,CHANGEC1#7,INSDATE#8] parquet
+      +- ResolvedHint (strategy=broadcast)
+         +- Project [CERT#9L, FAILDATE#12, COST#14]
+            +- Relation [CERT#9L,NAME#10,CITYST#11,FAILDATE#12,FAILYR#13L,COST#14,QBFASSET#15,QBFDEP#16,RESTYPE#17] parquet
+
+== Analyzed Logical Plan ==
+n_rows: bigint, n_bk: bigint, total_cost: double
+Aggregate [count(1) AS n_rows#66L, count(BKCLASS#3) AS n_bk#67L, sum(COST#14) AS total_cost#68]
++- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 11 more fields]
+   +- Join LeftOuter, (CERT#18L = CERT#9L)
+      :- Project [CERT#18L, REPDTE#19, STNAME#20, ASSET#21, DEP#22, DEPDOM#23, EQ#24, BRO#25, CHBAL#26, SC#27, LNLSGR#28, LNLSNET#29, LNRE#30, LNCI#31, LNCON#32, LNATRES#33, NCLNLS#34, P3ASSET#35, P9ASSET#36, NAASSET#37, NTLNLS#38, ORE#39, NETINC#40, INTINC#41, EINTEXP#42, ... 9 more fields]
+      :  +- Join LeftOuter, (CERT#18L = CERT#0L)
+      :     :- Filter (ASSET#21 > cast(0 as double))
+      :     :  +- Relation [CERT#18L,REPDTE#19,STNAME#20,ASSET#21,DEP#22,DEPDOM#23,EQ#24,BRO#25,CHBAL#26,SC#27,LNLSGR#28,LNLSNET#29,LNRE#30,LNCI#31,LNCON#32,LNATRES#33,NCLNLS#34,P3ASSET#35,P9ASSET#36,NAASSET#37,NTLNLS#38,ORE#39,NETINC#40,INTINC#41,EINTEXP#42,... 8 more fields] parquet
+      :     +- ResolvedHint (strategy=broadcast)
+      :        +- Project [CERT#0L, BKCLASS#3]
+      :           +- Relation [CERT#0L,NAME#1,STNAME#2,BKCLASS#3,ACTIVE#4L,ESTYMD#5,ENDEFYMD#6,CHANGEC1#7,INSDATE#8] parquet
+      +- ResolvedHint (strategy=broadcast)
+         +- Project [CERT#9L, FAILDATE#12, COST#14]
+            +- Relation [CERT#9L,NAME#10,CITYST#11,FAILDATE#12,FAILYR#13L,COST#14,QBFASSET#15,QBFDEP#16,RESTYPE#17] parquet
+
+== Optimized Logical Plan ==
+Aggregate [count(1) AS n_rows#66L, count(BKCLASS#3) AS n_bk#67L, sum(COST#14) AS total_cost#68]
++- Project [BKCLASS#3, COST#14]
+   +- Join LeftOuter, (CERT#18L = CERT#9L), rightHint=(strategy=broadcast)
+      :- Project [CERT#18L, BKCLASS#3]
+      :  +- Join LeftOuter, (CERT#18L = CERT#0L), rightHint=(strategy=broadcast)
+      :     :- Project [CERT#18L]
+      :     :  +- Filter (isnotnull(ASSET#21) AND (ASSET#21 > 0.0))
+      :     :     +- Relation [CERT#18L,REPDTE#19,STNAME#20,ASSET#21,DEP#22,DEPDOM#23,EQ#24,BRO#25,CHBAL#26,SC#27,LNLSGR#28,LNLSNET#29,LNRE#30,LNCI#31,LNCON#32,LNATRES#33,NCLNLS#34,P3ASSET#35,P9ASSET#36,NAASSET#37,NTLNLS#38,ORE#39,NETINC#40,INTINC#41,EINTEXP#42,... 8 more fields] parquet
+      :     +- Project [CERT#0L, BKCLASS#3]
+      :        +- Filter isnotnull(CERT#0L)
+      :           +- Relation [CERT#0L,NAME#1,STNAME#2,BKCLASS#3,ACTIVE#4L,ESTYMD#5,ENDEFYMD#6,CHANGEC1#7,INSDATE#8] parquet
+      +- Project [CERT#9L, COST#14]
+         +- Filter isnotnull(CERT#9L)
+            +- Relation [CERT#9L,NAME#10,CITYST#11,FAILDATE#12,FAILYR#13L,COST#14,QBFASSET#15,QBFDEP#16,RESTYPE#17] parquet
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- HashAggregate(keys=[], functions=[count(1), count(BKCLASS#3), sum(COST#14)], output=[n_rows#66L, n_bk#67L, total_cost#68])
+   +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=132]
+      +- HashAggregate(keys=[], functions=[partial_count(1), partial_count(BKCLASS#3), partial_sum(COST#14)], output=[count#75L, count#76L, sum#77])
+         +- Project [BKCLASS#3, COST#14]
+            +- BroadcastHashJoin [CERT#18L], [CERT#9L], LeftOuter, BuildRight, false, false
+               :- Project [CERT#18L, BKCLASS#3]
+               :  +- BroadcastHashJoin [CERT#18L], [CERT#0L], LeftOuter, BuildRight, false, false
+               :     :- Project [CERT#18L]
+               :     :  +- Filter (isnotnull(ASSET#21) AND (ASSET#21 > 0.0))
+               :     :     +- FileScan parquet [CERT#18L,ASSET#21] Batched: true, DataFilters: [isnotnull(ASSET#21), (ASSET#21 > 0.0)], Format: Parquet, Location: InMemoryFileIndex(170 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/financials/R..., PartitionFilters: [], PushedFilters: [IsNotNull(ASSET), GreaterThan(ASSET,0.0)], ReadSchema: struct<CERT:bigint,ASSET:double>
+               :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=123]
+               :        +- Filter isnotnull(CERT#0L)
+               :           +- FileScan parquet [CERT#0L,BKCLASS#3] Batched: true, DataFilters: [isnotnull(CERT#0L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/institutions.p..., PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,BKCLASS:string>
+               +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=127]
+                  +- Filter isnotnull(CERT#9L)
+                     +- FileScan parquet [CERT#9L,COST#14] Batched: true, DataFilters: [isnotnull(CERT#9L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/failures.parquet], PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,COST:double>
+
+
+################################################################################
+3A. FULL PANEL PIPELINE: 4-QUARTER WINDOW TRANSFORMATIONS PHYSICAL PLAN
+    Note: Shows Exchange hashpartitioning(CERT, 200) -> Sort [CERT, q_idx] -> Window [lag(...)]
+################################################################################
+== Parsed Logical Plan ==
+'Project [unresolvedstarwithcolumns(netinc_q, eq_to_asset, npl_to_loans, reserve_to_loans, liquid_to_asset, bro_to_dep, asset_growth_4q, eq_to_asset_diff_4q, roa_rolling_4q_mean, roa_rolling_4q_std, CASE WHEN '`=`('quarter, 1) THEN cast('NETINC as double) WHEN '`=`('`-`('q_idx, 'lag('q_idx, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 1) THEN cast('`-`('NETINC, 'lag('NETINC, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())) as double) ELSE cast(null as double) END, cast('`/`('EQ, 'ASSET) as double), CASE WHEN '`>`('LNLSGR, 0) THEN cast('`/`('NCLNLS, 'LNLSGR) as double) ELSE cast(null as double) END, CASE WHEN '`>`('LNLSGR, 0) THEN cast('`/`('LNATRES, 'LNLSGR) as double) ELSE cast(null as double) END, cast('`/`('`+`('coalesce('CHBAL, 0.0), 'coalesce('SC, 0.0)), 'ASSET) as double), CASE WHEN '`>`('DEP, 0) THEN cast('`/`('BRO, 'DEP) as double) ELSE cast(null as double) END, CASE WHEN 'and('`=`('`-`('q_idx, 'lag('q_idx, 4, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 4), '`>`('lag('ASSET, 4, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()), 0)) THEN cast('`/`('`-`('ASSET, 'lag('ASSET, 4, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 'lag('ASSET, 4, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())) as double) ELSE cast(null as double) END, CASE WHEN '`=`('`-`('q_idx, 'lag('q_idx, 4, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 4) THEN cast('`-`(cast('`/`('EQ, 'ASSET) as double), 'lag(cast('`/`('EQ, 'ASSET) as double), 4, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())) as double) ELSE cast(null as double) END, CASE WHEN 'and('and('and('`=`('`-`('q_idx, 'lag('q_idx, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 1), '`=`('`-`('q_idx, 'lag('q_idx, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 2)), '`=`('`-`('q_idx, 'lag('q_idx, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 3)), 'and('and('and('isNotNull(cast('ROA as double)), 'isNotNull(cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double))), 'isNotNull(cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double))), 'isNotNull(cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)))) THEN '`/`('`+`('`+`('`+`(cast('ROA as double), cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), 4.0) ELSE cast(null as double) END, CASE WHEN 'and('and('and('`=`('`-`('q_idx, 'lag('q_idx, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 1), '`=`('`-`('q_idx, 'lag('q_idx, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 2)), '`=`('`-`('q_idx, 'lag('q_idx, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$())), 3)), 'and('and('and('isNotNull(cast('ROA as double)), 'isNotNull(cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double))), 'isNotNull(cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double))), 'isNotNull(cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)))) THEN 'sqrt('`/`('`+`('`+`('`+`('power('`-`(cast('ROA as double), '`/`('`+`('`+`('`+`(cast('ROA as double), cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), 4.0)), 2), 'power('`-`(cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double), '`/`('`+`('`+`('`+`(cast('ROA as double), cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), 4.0)), 2)), 'power('`-`(cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double), '`/`('`+`('`+`('`+`(cast('ROA as double), cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), 4.0)), 2)), 'power('`-`(cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double), '`/`('`+`('`+`('`+`(cast('ROA as double), cast('lag('ROA, 1, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 2, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), cast('lag('ROA, 3, null, false) windowspecdefinition('CERT, 'q_idx ASC NULLS FIRST, unspecifiedframe$()) as double)), 4.0)), 2)), 3.0)) ELSE cast(null as double) END, None)]
++- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+   +- Join LeftOuter, (CERT#78L = CERT#142L)
+      :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+      :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+      :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+      :        +- Join LeftOuter, (CERT#78L = CERT#127L)
+      :           :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+      :           :  +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 12 more fields]
+      :           :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 11 more fields]
+      :           :        +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 10 more fields]
+      :           :           +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 9 more fields]
+      :           :              +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > cast(0 as double)))
+      :           :                 +- Relation [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] parquet
+      :           +- ResolvedHint (strategy=broadcast)
+      :              +- Project [CERT#127L, terminal_fail_date#131]
+      :                 +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 ELSE cast(null as date) END AS terminal_fail_date#131]
+      :                    +- Filter (rn#129 = 1)
+      :                       +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129]
+      :                          +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, rn#129]
+      :                             +- Window [row_number() windowspecdefinition(CERT#127L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#127L], [fail_date#128 DESC NULLS LAST]
+      :                                +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128]
+      :                                   +- Filter isnotnull(fail_date#128)
+      :                                      +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, try_to_date(FAILDATE#120, Some(M/d/yyyy), Some(UTC), false) AS fail_date#128]
+      :                                         +- Project [cast(CERT#117L as bigint) AS CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125]
+      :                                            +- Filter isnotnull(CERT#117L)
+      :                                               +- Relation [CERT#117L,NAME#118,CITYST#119,FAILDATE#120,FAILYR#121L,COST#122,QBFASSET#123,QBFDEP#124,RESTYPE#125] parquet
+      +- ResolvedHint (strategy=broadcast)
+         +- Project [CERT#142L, cast(BKCLASS#135 as string) AS BKCLASS#143]
+            +- Project [cast(CERT#132L as bigint) AS CERT#142L, BKCLASS#135]
+               +- Project [CERT#132L, BKCLASS#135]
+                  +- Relation [CERT#132L,NAME#133,STNAME#134,BKCLASS#135,ACTIVE#136L,ESTYMD#137,ENDEFYMD#138,CHANGEC1#139,INSDATE#140] parquet
+
+== Analyzed Logical Plan ==
+CERT: bigint, REPDTE: string, STNAME: string, ASSET: double, DEP: double, DEPDOM: double, EQ: double, BRO: double, CHBAL: double, SC: double, LNLSGR: double, LNLSNET: double, LNRE: double, LNCI: double, LNCON: double, LNATRES: double, NCLNLS: double, P3ASSET: double, P9ASSET: double, NAASSET: double, NTLNLS: double, ORE: double, NETINC: double, INTINC: double, EINTEXP: double, ... 24 more fields
+Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 24 more fields]
++- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 63 more fields]
+   +- Window [lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we0#155, lag(NETINC#100, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we1#156, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we2#157, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we3#158, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we4#159, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we5#160, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we6#161, lag(_w0#154, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we7#162, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we8#163, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we9#164, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we10#165, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we11#166, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we12#167, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we13#168, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we14#169, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we15#170, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we16#171, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we17#172, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we18#173, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we19#174, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we20#175, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we21#176, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we22#177, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we23#178, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we24#179, ... 13 more fields], [CERT#78L], [q_idx#116 ASC NULLS FIRST]
+      +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 20 more fields]
+         +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+            +- Join LeftOuter, (CERT#78L = CERT#142L)
+               :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+               :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+               :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+               :        +- Join LeftOuter, (CERT#78L = CERT#127L)
+               :           :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+               :           :  +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 12 more fields]
+               :           :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 11 more fields]
+               :           :        +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 10 more fields]
+               :           :           +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 9 more fields]
+               :           :              +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > cast(0 as double)))
+               :           :                 +- Relation [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] parquet
+               :           +- ResolvedHint (strategy=broadcast)
+               :              +- Project [CERT#127L, terminal_fail_date#131]
+               :                 +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 ELSE cast(null as date) END AS terminal_fail_date#131]
+               :                    +- Filter (rn#129 = 1)
+               :                       +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129]
+               :                          +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, rn#129]
+               :                             +- Window [row_number() windowspecdefinition(CERT#127L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#127L], [fail_date#128 DESC NULLS LAST]
+               :                                +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128]
+               :                                   +- Filter isnotnull(fail_date#128)
+               :                                      +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, try_to_date(FAILDATE#120, Some(M/d/yyyy), Some(UTC), false) AS fail_date#128]
+               :                                         +- Project [cast(CERT#117L as bigint) AS CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125]
+               :                                            +- Filter isnotnull(CERT#117L)
+               :                                               +- Relation [CERT#117L,NAME#118,CITYST#119,FAILDATE#120,FAILYR#121L,COST#122,QBFASSET#123,QBFDEP#124,RESTYPE#125] parquet
+               +- ResolvedHint (strategy=broadcast)
+                  +- Project [CERT#142L, cast(BKCLASS#135 as string) AS BKCLASS#143]
+                     +- Project [cast(CERT#132L as bigint) AS CERT#142L, BKCLASS#135]
+                        +- Project [CERT#132L, BKCLASS#135]
+                           +- Relation [CERT#132L,NAME#133,STNAME#134,BKCLASS#135,ACTIVE#136L,ESTYMD#137,ENDEFYMD#138,CHANGEC1#139,INSDATE#140] parquet
+
+== Optimized Logical Plan ==
+Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 24 more fields]
++- Window [lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we0#155, lag(NETINC#100, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we1#156, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we2#157, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we3#158, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we4#159, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we5#160, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we6#161, lag(_w0#154, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we7#162, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we8#163, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we9#164, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we10#165, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we11#166, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we12#167, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we13#168, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we14#169, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we15#170, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we16#171, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we17#172, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we18#173, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we19#174, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we20#175, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we21#176, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we22#177, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we23#178, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we24#179, ... 13 more fields], [CERT#78L], [q_idx#116 ASC NULLS FIRST]
+   +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 20 more fields]
+      +- Join LeftOuter, (CERT#78L = CERT#132L), rightHint=(strategy=broadcast)
+         :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+         :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+         :     +- Join LeftOuter, (CERT#78L = CERT#117L), rightHint=(strategy=broadcast)
+         :        :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+         :        :  +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 12 more fields]
+         :        :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 11 more fields]
+         :        :        +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > 0.0))
+         :        :           +- Relation [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] parquet
+         :        +- Project [CERT#117L, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 END AS terminal_fail_date#131]
+         :           +- Filter (rn#129 = 1)
+         :              +- Window [row_number() windowspecdefinition(CERT#117L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#117L], [fail_date#128 DESC NULLS LAST]
+         :                 +- WindowGroupLimit [CERT#117L], [fail_date#128 DESC NULLS LAST], row_number(), 1
+         :                    +- Project [CERT#117L, RESTYPE#125, cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date) AS fail_date#128]
+         :                       +- Filter (isnotnull(CERT#117L) AND isnotnull(cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date)))
+         :                          +- Relation [CERT#117L,NAME#118,CITYST#119,FAILDATE#120,FAILYR#121L,COST#122,QBFASSET#123,QBFDEP#124,RESTYPE#125] parquet
+         +- Project [CERT#132L, BKCLASS#135]
+            +- Filter isnotnull(CERT#132L)
+               +- Relation [CERT#132L,NAME#133,STNAME#134,BKCLASS#135,ACTIVE#136L,ESTYMD#137,ENDEFYMD#138,CHANGEC1#139,INSDATE#140] parquet
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 24 more fields]
+   +- Window [lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we0#155, lag(NETINC#100, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we1#156, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we2#157, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we3#158, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we4#159, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we5#160, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we6#161, lag(_w0#154, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we7#162, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we8#163, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we9#164, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we10#165, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we11#166, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we12#167, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we13#168, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we14#169, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we15#170, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we16#171, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we17#172, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we18#173, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we19#174, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we20#175, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we21#176, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we22#177, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we23#178, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we24#179, ... 13 more fields], [CERT#78L], [q_idx#116 ASC NULLS FIRST]
+      +- Sort [CERT#78L ASC NULLS FIRST, q_idx#116 ASC NULLS FIRST], false, 0
+         +- Exchange hashpartitioning(CERT#78L, 200), ENSURE_REQUIREMENTS, [plan_id=236]
+            +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 20 more fields]
+               +- BroadcastHashJoin [CERT#78L], [CERT#132L], LeftOuter, BuildRight, false, false
+                  :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+                  :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+                  :     +- BroadcastHashJoin [CERT#78L], [CERT#117L], LeftOuter, BuildRight, false, false
+                  :        :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+                  :        :  +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 12 more fields]
+                  :        :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 11 more fields]
+                  :        :        +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > 0.0))
+                  :        :           +- FileScan parquet [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] Batched: true, DataFilters: [isnotnull(ASSET#81), (ASSET#81 > 0.0)], Format: Parquet, Location: InMemoryFileIndex(170 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/financials/R..., PartitionFilters: [], PushedFilters: [IsNotNull(ASSET), GreaterThan(ASSET,0.0)], ReadSchema: struct<CERT:bigint,REPDTE:string,STNAME:string,ASSET:double,DEP:double,DEPDOM:double,EQ:double,BR...
+                  :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=227]
+                  :           +- Project [CERT#117L, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 END AS terminal_fail_date#131]
+                  :              +- Filter (rn#129 = 1)
+                  :                 +- Window [row_number() windowspecdefinition(CERT#117L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#117L], [fail_date#128 DESC NULLS LAST]
+                  :                    +- WindowGroupLimit [CERT#117L], [fail_date#128 DESC NULLS LAST], row_number(), 1, Final
+                  :                       +- Sort [CERT#117L ASC NULLS FIRST, fail_date#128 DESC NULLS LAST], false, 0
+                  :                          +- Exchange hashpartitioning(CERT#117L, 200), ENSURE_REQUIREMENTS, [plan_id=220]
+                  :                             +- WindowGroupLimit [CERT#117L], [fail_date#128 DESC NULLS LAST], row_number(), 1, Partial
+                  :                                +- Sort [CERT#117L ASC NULLS FIRST, fail_date#128 DESC NULLS LAST], false, 0
+                  :                                   +- Project [CERT#117L, RESTYPE#125, cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date) AS fail_date#128]
+                  :                                      +- Filter (isnotnull(CERT#117L) AND isnotnull(cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date)))
+                  :                                         +- FileScan parquet [CERT#117L,FAILDATE#120,RESTYPE#125] Batched: true, DataFilters: [isnotnull(CERT#117L), isnotnull(cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/failures.parquet], PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,FAILDATE:string,RESTYPE:string>
+                  +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=232]
+                     +- Filter isnotnull(CERT#132L)
+                        +- FileScan parquet [CERT#132L,BKCLASS#135] Batched: true, DataFilters: [isnotnull(CERT#132L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/institutions.p..., PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,BKCLASS:string>
+
+
+################################################################################
+3B. PEER GROUPBY PHYSICAL PLAN (CATALYST COLUMN PRUNING + TWO-STAGE HASHAGGREGATE)
+    Note: Catalyst prunes unused Window columns and executes partial_agg -> Exchange -> final_agg
+################################################################################
+== Parsed Logical Plan ==
+'Sort ['REPDTE ASC NULLS FIRST, 'STNAME ASC NULLS FIRST], true
++- Aggregate [REPDTE#79, STNAME#80], [REPDTE#79, STNAME#80, count(1) AS peer_bank_count#193L, sum(ASSET#81) AS peer_total_assets#194, avg(ROA#106) AS peer_mean_roa#195, avg(eq_to_asset#145) AS peer_mean_eq_to_asset#196]
+   +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 24 more fields]
+      +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 63 more fields]
+         +- Window [lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we0#155, lag(NETINC#100, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we1#156, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we2#157, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we3#158, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we4#159, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we5#160, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we6#161, lag(_w0#154, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we7#162, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we8#163, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we9#164, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we10#165, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we11#166, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we12#167, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we13#168, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we14#169, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we15#170, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we16#171, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we17#172, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we18#173, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we19#174, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we20#175, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we21#176, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we22#177, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we23#178, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we24#179, ... 13 more fields], [CERT#78L], [q_idx#116 ASC NULLS FIRST]
+            +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 20 more fields]
+               +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+                  +- Join LeftOuter, (CERT#78L = CERT#142L)
+                     :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+                     :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+                     :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+                     :        +- Join LeftOuter, (CERT#78L = CERT#127L)
+                     :           :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+                     :           :  +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 12 more fields]
+                     :           :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 11 more fields]
+                     :           :        +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 10 more fields]
+                     :           :           +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 9 more fields]
+                     :           :              +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > cast(0 as double)))
+                     :           :                 +- Relation [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] parquet
+                     :           +- ResolvedHint (strategy=broadcast)
+                     :              +- Project [CERT#127L, terminal_fail_date#131]
+                     :                 +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 ELSE cast(null as date) END AS terminal_fail_date#131]
+                     :                    +- Filter (rn#129 = 1)
+                     :                       +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129]
+                     :                          +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, rn#129]
+                     :                             +- Window [row_number() windowspecdefinition(CERT#127L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#127L], [fail_date#128 DESC NULLS LAST]
+                     :                                +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128]
+                     :                                   +- Filter isnotnull(fail_date#128)
+                     :                                      +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, try_to_date(FAILDATE#120, Some(M/d/yyyy), Some(UTC), false) AS fail_date#128]
+                     :                                         +- Project [cast(CERT#117L as bigint) AS CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125]
+                     :                                            +- Filter isnotnull(CERT#117L)
+                     :                                               +- Relation [CERT#117L,NAME#118,CITYST#119,FAILDATE#120,FAILYR#121L,COST#122,QBFASSET#123,QBFDEP#124,RESTYPE#125] parquet
+                     +- ResolvedHint (strategy=broadcast)
+                        +- Project [CERT#142L, cast(BKCLASS#135 as string) AS BKCLASS#143]
+                           +- Project [cast(CERT#132L as bigint) AS CERT#142L, BKCLASS#135]
+                              +- Project [CERT#132L, BKCLASS#135]
+                                 +- Relation [CERT#132L,NAME#133,STNAME#134,BKCLASS#135,ACTIVE#136L,ESTYMD#137,ENDEFYMD#138,CHANGEC1#139,INSDATE#140] parquet
+
+== Analyzed Logical Plan ==
+REPDTE: string, STNAME: string, peer_bank_count: bigint, peer_total_assets: double, peer_mean_roa: double, peer_mean_eq_to_asset: double
+Sort [REPDTE#79 ASC NULLS FIRST, STNAME#80 ASC NULLS FIRST], true
++- Aggregate [REPDTE#79, STNAME#80], [REPDTE#79, STNAME#80, count(1) AS peer_bank_count#193L, sum(ASSET#81) AS peer_total_assets#194, avg(ROA#106) AS peer_mean_roa#195, avg(eq_to_asset#145) AS peer_mean_eq_to_asset#196]
+   +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 24 more fields]
+      +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 63 more fields]
+         +- Window [lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we0#155, lag(NETINC#100, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we1#156, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we2#157, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we3#158, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we4#159, lag(ASSET#81, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we5#160, lag(q_idx#116, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we6#161, lag(_w0#154, -4, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -4, -4)) AS _we7#162, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we8#163, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we9#164, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we10#165, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we11#166, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we12#167, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we13#168, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we14#169, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we15#170, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we16#171, lag(q_idx#116, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we17#172, lag(q_idx#116, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we18#173, lag(q_idx#116, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we19#174, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we20#175, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we21#176, lag(ROA#106, -3, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, -3)) AS _we22#177, lag(ROA#106, -1, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS _we23#178, lag(ROA#106, -2, null) windowspecdefinition(CERT#78L, q_idx#116 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, -2)) AS _we24#179, ... 13 more fields], [CERT#78L], [q_idx#116 ASC NULLS FIRST]
+            +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 20 more fields]
+               +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+                  +- Join LeftOuter, (CERT#78L = CERT#142L)
+                     :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+                     :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+                     :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 14 more fields]
+                     :        +- Join LeftOuter, (CERT#78L = CERT#127L)
+                     :           :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 13 more fields]
+                     :           :  +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 12 more fields]
+                     :           :     +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 11 more fields]
+                     :           :        +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 10 more fields]
+                     :           :           +- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, DEP#82, DEPDOM#83, EQ#84, BRO#85, CHBAL#86, SC#87, LNLSGR#88, LNLSNET#89, LNRE#90, LNCI#91, LNCON#92, LNATRES#93, NCLNLS#94, P3ASSET#95, P9ASSET#96, NAASSET#97, NTLNLS#98, ORE#99, NETINC#100, INTINC#101, EINTEXP#102, ... 9 more fields]
+                     :           :              +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > cast(0 as double)))
+                     :           :                 +- Relation [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] parquet
+                     :           +- ResolvedHint (strategy=broadcast)
+                     :              +- Project [CERT#127L, terminal_fail_date#131]
+                     :                 +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 ELSE cast(null as date) END AS terminal_fail_date#131]
+                     :                    +- Filter (rn#129 = 1)
+                     :                       +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129]
+                     :                          +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128, rn#129, rn#129]
+                     :                             +- Window [row_number() windowspecdefinition(CERT#127L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#127L], [fail_date#128 DESC NULLS LAST]
+                     :                                +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, fail_date#128]
+                     :                                   +- Filter isnotnull(fail_date#128)
+                     :                                      +- Project [CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125, try_to_date(FAILDATE#120, Some(M/d/yyyy), Some(UTC), false) AS fail_date#128]
+                     :                                         +- Project [cast(CERT#117L as bigint) AS CERT#127L, NAME#118, CITYST#119, FAILDATE#120, FAILYR#121L, COST#122, QBFASSET#123, QBFDEP#124, RESTYPE#125]
+                     :                                            +- Filter isnotnull(CERT#117L)
+                     :                                               +- Relation [CERT#117L,NAME#118,CITYST#119,FAILDATE#120,FAILYR#121L,COST#122,QBFASSET#123,QBFDEP#124,RESTYPE#125] parquet
+                     +- ResolvedHint (strategy=broadcast)
+                        +- Project [CERT#142L, cast(BKCLASS#135 as string) AS BKCLASS#143]
+                           +- Project [cast(CERT#132L as bigint) AS CERT#142L, BKCLASS#135]
+                              +- Project [CERT#132L, BKCLASS#135]
+                                 +- Relation [CERT#132L,NAME#133,STNAME#134,BKCLASS#135,ACTIVE#136L,ESTYMD#137,ENDEFYMD#138,CHANGEC1#139,INSDATE#140] parquet
+
+== Optimized Logical Plan ==
+Sort [REPDTE#79 ASC NULLS FIRST, STNAME#80 ASC NULLS FIRST], true
++- Aggregate [REPDTE#79, STNAME#80], [REPDTE#79, STNAME#80, count(1) AS peer_bank_count#193L, sum(ASSET#81) AS peer_total_assets#194, avg(ROA#106) AS peer_mean_roa#195, avg(eq_to_asset#145) AS peer_mean_eq_to_asset#196]
+   +- Project [REPDTE#79, STNAME#80, ASSET#81, ROA#106, (EQ#84 / ASSET#81) AS eq_to_asset#145]
+      +- Join LeftOuter, (CERT#78L = CERT#132L), rightHint=(strategy=broadcast)
+         :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, EQ#84, ROA#106]
+         :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+         :     +- Join LeftOuter, (CERT#78L = CERT#117L), rightHint=(strategy=broadcast)
+         :        :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, EQ#84, ROA#106, cast(gettimestamp(REPDTE#79, yyyyMMdd, TimestampType, try_to_date, Some(UTC), true) as date) AS repdte_date#112]
+         :        :  +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > 0.0))
+         :        :     +- Relation [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,DEP#82,DEPDOM#83,EQ#84,BRO#85,CHBAL#86,SC#87,LNLSGR#88,LNLSNET#89,LNRE#90,LNCI#91,LNCON#92,LNATRES#93,NCLNLS#94,P3ASSET#95,P9ASSET#96,NAASSET#97,NTLNLS#98,ORE#99,NETINC#100,INTINC#101,EINTEXP#102,... 8 more fields] parquet
+         :        +- Project [CERT#117L, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 END AS terminal_fail_date#131]
+         :           +- Filter (rn#129 = 1)
+         :              +- Window [row_number() windowspecdefinition(CERT#117L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#117L], [fail_date#128 DESC NULLS LAST]
+         :                 +- WindowGroupLimit [CERT#117L], [fail_date#128 DESC NULLS LAST], row_number(), 1
+         :                    +- Project [CERT#117L, RESTYPE#125, cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date) AS fail_date#128]
+         :                       +- Filter (isnotnull(CERT#117L) AND isnotnull(cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date)))
+         :                          +- Relation [CERT#117L,NAME#118,CITYST#119,FAILDATE#120,FAILYR#121L,COST#122,QBFASSET#123,QBFDEP#124,RESTYPE#125] parquet
+         +- Project [CERT#132L]
+            +- Filter isnotnull(CERT#132L)
+               +- Relation [CERT#132L,NAME#133,STNAME#134,BKCLASS#135,ACTIVE#136L,ESTYMD#137,ENDEFYMD#138,CHANGEC1#139,INSDATE#140] parquet
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [REPDTE#79 ASC NULLS FIRST, STNAME#80 ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(REPDTE#79 ASC NULLS FIRST, STNAME#80 ASC NULLS FIRST, 200), ENSURE_REQUIREMENTS, [plan_id=342]
+      +- HashAggregate(keys=[REPDTE#79, STNAME#80], functions=[count(1), sum(ASSET#81), avg(ROA#106), avg(eq_to_asset#145)], output=[REPDTE#79, STNAME#80, peer_bank_count#193L, peer_total_assets#194, peer_mean_roa#195, peer_mean_eq_to_asset#196])
+         +- Exchange hashpartitioning(REPDTE#79, STNAME#80, 200), ENSURE_REQUIREMENTS, [plan_id=339]
+            +- HashAggregate(keys=[REPDTE#79, STNAME#80], functions=[partial_count(1), partial_sum(ASSET#81), partial_avg(ROA#106), partial_avg(eq_to_asset#145)], output=[REPDTE#79, STNAME#80, count#256L, sum#257, sum#258, count#259L, sum#260, count#261L])
+               +- Project [REPDTE#79, STNAME#80, ASSET#81, ROA#106, (EQ#84 / ASSET#81) AS eq_to_asset#145]
+                  +- BroadcastHashJoin [CERT#78L], [CERT#132L], LeftOuter, BuildRight, false, false
+                     :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, EQ#84, ROA#106]
+                     :  +- Filter (isnull(terminal_fail_date#131) OR (repdte_date#112 < terminal_fail_date#131))
+                     :     +- BroadcastHashJoin [CERT#78L], [CERT#117L], LeftOuter, BuildRight, false, false
+                     :        :- Project [CERT#78L, REPDTE#79, STNAME#80, ASSET#81, EQ#84, ROA#106, cast(gettimestamp(REPDTE#79, yyyyMMdd, TimestampType, try_to_date, Some(UTC), true) as date) AS repdte_date#112]
+                     :        :  +- Filter (isnotnull(ASSET#81) AND (ASSET#81 > 0.0))
+                     :        :     +- FileScan parquet [CERT#78L,REPDTE#79,STNAME#80,ASSET#81,EQ#84,ROA#106] Batched: true, DataFilters: [isnotnull(ASSET#81), (ASSET#81 > 0.0)], Format: Parquet, Location: InMemoryFileIndex(170 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/financials/R..., PartitionFilters: [], PushedFilters: [IsNotNull(ASSET), GreaterThan(ASSET,0.0)], ReadSchema: struct<CERT:bigint,REPDTE:string,STNAME:string,ASSET:double,EQ:double,ROA:double>
+                     :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=329]
+                     :           +- Project [CERT#117L, CASE WHEN (RESTYPE#125 = FAILURE) THEN fail_date#128 END AS terminal_fail_date#131]
+                     :              +- Filter (rn#129 = 1)
+                     :                 +- Window [row_number() windowspecdefinition(CERT#117L, fail_date#128 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#129], [CERT#117L], [fail_date#128 DESC NULLS LAST]
+                     :                    +- WindowGroupLimit [CERT#117L], [fail_date#128 DESC NULLS LAST], row_number(), 1, Final
+                     :                       +- Sort [CERT#117L ASC NULLS FIRST, fail_date#128 DESC NULLS LAST], false, 0
+                     :                          +- Exchange hashpartitioning(CERT#117L, 200), ENSURE_REQUIREMENTS, [plan_id=322]
+                     :                             +- WindowGroupLimit [CERT#117L], [fail_date#128 DESC NULLS LAST], row_number(), 1, Partial
+                     :                                +- Sort [CERT#117L ASC NULLS FIRST, fail_date#128 DESC NULLS LAST], false, 0
+                     :                                   +- Project [CERT#117L, RESTYPE#125, cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date) AS fail_date#128]
+                     :                                      +- Filter (isnotnull(CERT#117L) AND isnotnull(cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_date, Some(UTC), false) as date)))
+                     :                                         +- FileScan parquet [CERT#117L,FAILDATE#120,RESTYPE#125] Batched: true, DataFilters: [isnotnull(CERT#117L), isnotnull(cast(gettimestamp(FAILDATE#120, M/d/yyyy, TimestampType, try_to_..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/failures.parquet], PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint,FAILDATE:string,RESTYPE:string>
+                     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=334]
+                        +- Filter isnotnull(CERT#132L)
+                           +- FileScan parquet [CERT#132L] Batched: true, DataFilters: [isnotnull(CERT#132L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/F:/hoc/ki 1 nam 4/Big Data/Du an cuoi ki/data/raw/institutions.p..., PartitionFilters: [], PushedFilters: [IsNotNull(CERT)], ReadSchema: struct<CERT:bigint>
+

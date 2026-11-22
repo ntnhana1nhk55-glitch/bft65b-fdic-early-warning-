@@ -1,0 +1,39 @@
+{
+  "status": "SUCCESS",
+  "timestamp": "2026-11-09 23:13:51",
+  "total_duration_seconds": 277.6,
+  "spark_version": "4.3.0",
+  "dataset_summary": {
+    "gold_path": "F:\\hoc\\ki 1 nam 4\\Big Data\\Du an cuoi ki\\data\\features\\gold_feature_table.parquet",
+    "train_dev_rows": 1193702,
+    "train_dev_fails": 10225,
+    "test_rows": 212645,
+    "test_fails": 2052
+  },
+  "pipeline_architecture": [
+    "StringIndexer(inputCol='BKCLASS', outputCol='BKCLASS_idx')",
+    "OneHotEncoder(inputCols=['BKCLASS_idx'], outputCols=['BKCLASS_ohe'])",
+    "Imputer(strategy='median', inputCols=NUMERIC_FEATURES [39 cols])",
+    "VectorAssembler(inputCols=[imputed_39_cols + BKCLASS_ohe], outputCol='raw_features')",
+    "StandardScaler(inputCol='raw_features', outputCol='features', withMean=True, withStd=True)",
+    "Estimator: Fitted STRICTLY on DEV (1984Q1\u20132006Q4)"
+  ],
+  "models": {
+    "Spark_MLlib_LogisticRegression": {
+      "fit_time_seconds": 71.81,
+      "prediction_time_seconds": 8.83,
+      "test_roc_auc_spark": 0.953555,
+      "test_pr_auc_spark": 0.306088,
+      "test_roc_auc_sklearn": 0.953552,
+      "test_pr_auc_sklearn": 0.308538
+    },
+    "Spark_MLlib_GBTClassifier": {
+      "fit_time_seconds": 113.16,
+      "prediction_time_seconds": 8.06,
+      "test_roc_auc_spark": 0.973259,
+      "test_pr_auc_spark": 0.601839,
+      "test_roc_auc_sklearn": 0.974416,
+      "test_pr_auc_sklearn": 0.601709
+    }
+  }
+}

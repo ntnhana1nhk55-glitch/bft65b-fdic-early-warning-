@@ -1,0 +1,5 @@
+scale_factor,scale_multiplier,dataset_rows,dataset_disk_mb,dataset_disk_gb,polars_time_sec,polars_peak_rss_mb,pandas_status,pandas_time_sec,pandas_peak_rss_mb,speedup_polars_vs_pandas
+1x,1,1682616,241.88,0.236,1.09,4550.09,SUCCESS,10.87,6273.79,9.99
+2x,2,3365232,411.85,0.402,2.57,5259.95,SUCCESS,19.77,7470.28,7.7
+5x,5,8413080,1017.15,0.993,8.02,7908.22,SKIPPED_RAM_CONSTRAINED,,,
+10x,10,16826160,2029.09,1.982,39.77,8362.85,SKIPPED_RAM_CONSTRAINED,,,

@@ -1,0 +1,61 @@
+{
+  "silver_panel_path": "F:\\hoc\\ki 1 nam 4\\Big Data\\Du an cuoi ki\\data\\processed\\bank_quarter_panel.parquet",
+  "file_size_mb": 201.13,
+  "generation_time_seconds": 1.52,
+  "raw_rows_input": 1682616,
+  "rows_dropped_asset_non_positive": 0,
+  "rows_dropped_post_mortem": 1185,
+  "total_silver_rows": 1681431,
+  "distinct_certs": 24062,
+  "total_4q_failure_events": 12459,
+  "distinct_failed_banks": 3216,
+  "splits_breakdown": [
+    {
+      "_meta_split": "dev",
+      "total_rows": 1193702,
+      "fail_4q_events": 10225,
+      "distinct_certs": 23622,
+      "failure_rate_pct": 0.8565789451638683,
+      "total_fail_cost_k": 702533489.2300907
+    },
+    {
+      "_meta_split": "post_test",
+      "total_rows": 222801,
+      "fail_4q_events": 129,
+      "distinct_certs": 6585,
+      "failure_rate_pct": 0.05789920152961611,
+      "total_fail_cost_k": 144512927.592
+    },
+    {
+      "_meta_split": "test",
+      "total_rows": 212645,
+      "fail_4q_events": 2052,
+      "distinct_certs": 8709,
+      "failure_rate_pct": 0.9649885960168356,
+      "total_fail_cost_k": 247253464.773
+    },
+    {
+      "_meta_split": "embargo",
+      "total_rows": 34754,
+      "fail_4q_events": 53,
+      "distinct_certs": 8892,
+      "failure_rate_pct": 0.1525004316049951,
+      "total_fail_cost_k": 34565998.767000005
+    },
+    {
+      "_meta_split": "incomplete_label",
+      "total_rows": 17529,
+      "fail_4q_events": 0,
+      "distinct_certs": 4461,
+      "failure_rate_pct": 0.0,
+      "total_fail_cost_k": 351741.0
+    }
+  ],
+  "anti_leakage_guarantees": [
+    "Contemporaneous features contain strictly historical Call Report financial data and static birth BKCLASS.",
+    "Institutions snapshot variables (ACTIVE, CHANGEC1, ENDEFYMD) strictly isolated under _meta_ prefix.",
+    "Forward failure matching is strictly point-in-time: earliest future failure where fail_date > repdte_date.",
+    "Labels after 2025-06-30 are null-masked (_meta_label_complete = False) to prevent truncated-horizon bias.",
+    "All voluntary exits, mergers, and absorptions receive target_fail_4q = 0 (only FDIC-assisted receiverships/closures are 1)."
+  ]
+}

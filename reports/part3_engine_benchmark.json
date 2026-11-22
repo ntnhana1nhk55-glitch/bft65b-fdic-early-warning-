@@ -1,0 +1,122 @@
+[
+  {
+    "workload": "End-to-End",
+    "engine": "Pandas (Vectorized)",
+    "runs_count": 5,
+    "median_ms": 9154.08,
+    "mean_ms": 9110.35,
+    "std_ms": 72.87,
+    "min_ms": 9016.79,
+    "max_ms": 9196.56,
+    "peak_rss_mb": 2919.61,
+    "delta_rss_mb": 163.75,
+    "speedup_vs_pandas": 1.0,
+    "raw_times_ms": [
+      9154.08,
+      9016.79,
+      9154.57,
+      9196.56,
+      9029.75
+    ]
+  },
+  {
+    "workload": "End-to-End",
+    "engine": "Polars (Eager)",
+    "runs_count": 5,
+    "median_ms": 2512.86,
+    "mean_ms": 2529.66,
+    "std_ms": 90.15,
+    "min_ms": 2430.33,
+    "max_ms": 2689.28,
+    "peak_rss_mb": 3757.09,
+    "delta_rss_mb": 69.12,
+    "speedup_vs_pandas": 3.64,
+    "raw_times_ms": [
+      2552.96,
+      2689.28,
+      2512.86,
+      2430.33,
+      2462.85
+    ]
+  },
+  {
+    "workload": "End-to-End",
+    "engine": "Polars (Lazy)",
+    "runs_count": 5,
+    "median_ms": 1140.23,
+    "mean_ms": 1195.05,
+    "std_ms": 131.49,
+    "min_ms": 1108.66,
+    "max_ms": 1456.24,
+    "peak_rss_mb": 4154.97,
+    "delta_rss_mb": 212.0,
+    "speedup_vs_pandas": 8.03,
+    "raw_times_ms": [
+      1118.25,
+      1151.87,
+      1456.24,
+      1140.23,
+      1108.66
+    ]
+  },
+  {
+    "workload": "Selective-Pushdown",
+    "engine": "Pandas (Vectorized)",
+    "runs_count": 5,
+    "median_ms": 1749.68,
+    "mean_ms": 1740.85,
+    "std_ms": 24.11,
+    "min_ms": 1706.31,
+    "max_ms": 1775.2,
+    "peak_rss_mb": 4012.39,
+    "delta_rss_mb": 61.19,
+    "speedup_vs_pandas": 1.0,
+    "raw_times_ms": [
+      1749.68,
+      1722.07,
+      1706.31,
+      1750.98,
+      1775.2
+    ]
+  },
+  {
+    "workload": "Selective-Pushdown",
+    "engine": "Polars (Eager)",
+    "runs_count": 5,
+    "median_ms": 158.46,
+    "mean_ms": 183.06,
+    "std_ms": 54.22,
+    "min_ms": 153.0,
+    "max_ms": 291.41,
+    "peak_rss_mb": 3079.82,
+    "delta_rss_mb": 97.02,
+    "speedup_vs_pandas": 11.04,
+    "raw_times_ms": [
+      158.63,
+      153.0,
+      291.41,
+      158.46,
+      153.78
+    ]
+  },
+  {
+    "workload": "Selective-Pushdown",
+    "engine": "Polars (Lazy)",
+    "runs_count": 5,
+    "median_ms": 43.43,
+    "mean_ms": 52.46,
+    "std_ms": 18.08,
+    "min_ms": 42.04,
+    "max_ms": 88.55,
+    "peak_rss_mb": 2827.81,
+    "delta_rss_mb": 5.08,
+    "speedup_vs_pandas": 40.29,
+    "raw_times_ms": [
+      43.43,
+      88.55,
+      42.97,
+      45.33,
+      42.04
+    ]
+  }
+]
