@@ -57,8 +57,8 @@ bft65b-fdic-early-warning-/
 │   │   ├── financials/                   # Partitioned Call Reports (REPDTE=YYYYMMDD.parquet)
 │   │   ├── institutions.parquet          # FDIC structural demographics (27,835 banks)
 │   │   ├── failures.parquet              # FDIC failure & assistance events (4,117 records)
-│   │   └── manifest_financials.json      # SHA-256 cryptographic verification manifest
-│   ├── processed/                        # Silver layer: Deduplicated longitudinal panel
+│   │   └── manifest_financials.json      # JSON completeness & byte-size verification manifest
+│   ├── processed/                        # Silver layer: Point-in-time cleaned longitudinal panel
 │   │   └── bank_quarter_panel.parquet    # Cleaned Silver panel (1,681,431 rows x 46 cols)
 │   └── features/                         # Gold layer: Leak-free feature table
 │       └── gold_feature_table.parquet    # Feature-engineered Gold panel (1,663,902 rows x 57 cols)
@@ -70,7 +70,8 @@ bft65b-fdic-early-warning-/
 │   │   ├── fig4_engine_benchmark_and_scaling.png
 │   │   ├── fig5_camels_auc_and_importance.png
 │   │   └── fig6_model_evaluation_and_cost_threshold.png
-│   ├── FINAL_REPORT_BFT65B.md            # Complete English Academic Research Report
+│   ├── FINAL_REPORT_BFT65B.docx          # Official Academic Research Report (Microsoft Word)
+│   ├── FINAL_REPORT_BFT65B.md            # Complete English Academic Research Report (Markdown)
 │   ├── PROJECT_LOG.md                    # Detailed multi-phase engineering journal
 │   ├── independent_external_audit.md     # Independent zero-trust adversarial audit report
 │   ├── final_audit_certificate.json      # Machine-readable audit verification (47/47 PASS)
@@ -104,8 +105,9 @@ bft65b-fdic-early-warning-/
 │   ├── models/                           # Model training, CV & evaluation (Part 5)
 │   │   ├── train_evaluate.py             # Model training, OOF tuning & cost optimizer
 │   │   └── spark_mllib_demo.py           # Distributed PySpark MLlib GBT & Logistic demo
-│   ├── visualization/                    # Publication-grade figure generator (Part 6)
-│   │   └── generate_figures.py           # 6 Publication-grade 300 DPI figures generator
+│   ├── visualization/                    # Publication-grade figure & report generators (Part 6)
+│   │   ├── generate_figures.py           # 6 Publication-grade 300 DPI figures generator
+│   │   └── generate_word_report.py       # Official Word academic report generator (FINAL_REPORT_BFT65B.docx)
 │   └── audit/                            # Deterministic invariant verification suite
 │       └── verify_end_to_end.py          # 47-check automated end-to-end audit gate
 ├── requirements.txt                      # Pinned exact package versions for reproducibility
@@ -193,7 +195,13 @@ python -X utf8 src/data/build_panel.py
 # ==============================================================================
 # PART 3: SCALABLE PROCESSING, QUERY PLANS & DISTRIBUTED BENCHMARKS
 # ==============================================================================
-# Execute 4-engine benchmark (Pandas vs Polars Eager/Lazy vs PySpark), Amdahl scaling & stress
+# Export Polars Lazy physical query plans & verify selective pushdown optimization
+python -X utf8 src/processing/polars_pipeline.py
+
+# Run 4-way PySpark numerical parity & BroadcastHashJoin vs SortMergeJoin benchmark
+python -X utf8 src/processing/pyspark_pipeline.py
+
+# Execute engine latency benchmark, Amdahl scaling & 1x-10x scale-up stress test
 python -X utf8 src/processing/benchmark_engines.py
 
 # ==============================================================================
@@ -201,6 +209,9 @@ python -X utf8 src/processing/benchmark_engines.py
 # ==============================================================================
 # Generate 40-feature CAMELS Gold panel (1,663,902 rows x 57 cols)
 python -X utf8 src/features/build_features.py
+
+# Fit inside-fold sklearn preprocessing pipeline & generate 40-feature catalog + univariate AUC
+python -X utf8 src/features/preprocessing_pipeline.py
 
 # ==============================================================================
 # PART 5: MODELLING, PURGED EXPANDING CV & COST-DRIVEN EVALUATION
@@ -212,10 +223,13 @@ python -X utf8 src/models/train_evaluate.py
 python -X utf8 src/models/spark_mllib_demo.py
 
 # ==============================================================================
-# PART 6: VISUALIZATION & FIGURE GENERATION
+# PART 6: VISUALIZATION & REPORT GENERATION
 # ==============================================================================
 # Generate all 6 publication-grade figures (300 DPI PNGs in reports/figures/)
 python -X utf8 src/visualization/generate_figures.py
+
+# Generate official Microsoft Word research report (reports/FINAL_REPORT_BFT65B.docx)
+python -X utf8 src/visualization/generate_word_report.py
 
 # ==============================================================================
 # END-TO-END VERIFICATION & ANTI-LEAKAGE AUDIT SUITE

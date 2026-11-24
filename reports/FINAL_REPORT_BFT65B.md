@@ -51,7 +51,7 @@ An enterprise-grade **Early-Warning System (EWS)** continuously scans quarterly 
 +--------------------------------------------------------------------------------------------------+
 |                                      STORAGE & INGESTION LAYER                                   |
 |   • Strict 33-Column PyArrow Schema Enforcement                                                  |
-|   • Exponential Backoff Ingestion & SHA-256 Manifest Verification                                |
+|   • Exponential Backoff Ingestion & JSON Completeness Manifest Verification                        |
 |   • Columnar Storage Layout Optimization (Snappy / Zstandard Apache Parquet)                     |
 +--------------------------------------------------------------------------------------------------+
                                                  │
@@ -81,7 +81,7 @@ Our acquisition architecture targets three distinct REST endpoints of the FDIC B
 3. **`/failures`:** Capturing all **4,117 official FDIC resolutions and assistance transactions** from 1984 through 2026, recording transaction closure dates, resolution types (`RESTYPE`), and net estimated resolution losses to the Deposit Insurance Fund (`COST`).
 
 To guard against network timeouts, HTTP 429 rate-limiting, and malformed JSON payloads across 170 distinct API requests, and benchmarking against the course reference starter script `fdic_download_starter.py`, `src/data/acquire.py` implements an enterprise acquisition client featuring:
-- **Resumable Manifest Tracking:** A local JSON manifest records HTTP status codes, payload row counts, execution duration, and cryptographic SHA-256 hashes for each downloaded quarter. If interrupted, the ingestion resumes strictly at the first unverified quarter.
+- **Resumable Manifest Tracking:** A local JSON manifest records exact API totals, row counts, zero-duplicate checks, file byte sizes, completeness flags, and UTC timestamps for each downloaded quarter. If interrupted, the ingestion resumes strictly at the first unverified quarter.
 - **Strict 33-Column PyArrow Typing:** Dynamic web APIs frequently coerce sparse numeric fields into mixed string/null types. We define an immutable PyArrow schema enforcing 64-bit floating point representations for all 27 accounting variables (`ASSET`, `DEP`, `EQ`, `NETINC`, `ROA`, `RBCRWAJ`, etc.), integer types for identifiers (`CERT`, `year`, `quarter`), and ISO strings for regulatory dates.
 - **Deterministic Sort Invariants:** Every quarterly partition is deterministically sorted on `["CERT", "REPDTE"]` prior to persistence, ensuring reproducible multi-threading down the pipeline.
 
@@ -120,7 +120,7 @@ The empirical results reveal crucial physical and architectural mechanics:
    Raw CSV occupies **424.12 MB**. Converting to Parquet Snappy reduces the footprint to **241.88 MB** ($1.75\times$), while Parquet Zstandard achieves **190.73 MB** ($2.22\times$). This efficiency stems from Parquet’s typed page format: numeric columns with repeated values (such as zero-filled delinquency variables or sentinel codes) undergo Run-Length Encoding (RLE) and Bit-Packing prior to compression. CSV.gz achieves a smaller byte footprint (**167.47 MB**) via brute-force DEFLATE streaming, but pays an enormous computational penalty: write time balloons to **213.38 seconds** ($12\times$ longer than Parquet), and read latency degrades to **3,119.4 ms** because Gzip creates an opaque byte stream that prevents parallel block decompression.
 
 2. **The Power of Column Projection & Predicate Pushdown:**  
-   In supervisory analytics, an analyst rarely queries all 33 columns. When projecting 5 core CAMELS columns (`CERT`, `REPDTE`, `ASSET`, `EQ`, `ROA`), Parquet Snappy query latency drops from **147.9 ms** to **50.8 ms**. When combining projection with predicate filtering (`ASSET > 1,000,000` and `ROA < 0`), latency plunges to **31.9 ms**.  
+   In supervisory analytics, an analyst rarely queries all 33 columns. When projecting 5 core CAMELS columns (`CERT`, `REPDTE`, `ASSET`, `EQ`, `ROA`), Parquet Snappy query latency drops from **147.9 ms** to **50.8 ms**. When combining projection with quarterly predicate filtering (`REPDTE == '20091231'`), latency plunges to **31.9 ms**.  
    Compared to reading a CSV via standard Pandas (**14,652.7 ms**), this represents an astonishing **$459.0\times$ speedup**. Compared to Polars reading raw CSV (**721.9 ms** full scan and **522.5 ms** with predicate filter), Parquet Snappy achieves **$22.6\times$** and **$16.4\times$ speedups** respectively. Parquet achieves this because the reader parses only the metadata footer, locates the byte offsets of the requested column chunks, evaluates row-group `min`/`max` statistics, and completely skips unreferenced columns and non-matching row groups from disk.
 
 3. **Small-File Partitioning Overhead Nuance:**  
@@ -283,13 +283,13 @@ This confirms 100% mathematical parity across all four engines.
 
 #### A. Polars Physical Optimization (`reports/polars_query_plans.txt`)
 Inspection of the Polars physical plan generated by `.explain(optimized=True)` reveals how Polars Lazy achieves its **$40.29\times$ speedup** (**43.43 ms** vs **1,749.68 ms** Pandas):
-1. **Projection Pushdown:** The physical plan pushes column pruning directly into the Parquet reader:
-   `PROJECT 5/33 COLUMNS: [CERT, REPDTE, ASSET, EQ, ROA]`
-   Only 15% of the file data is transferred from NVMe to system memory.
-2. **Predicate Pushdown:** Filter expressions are pushed into row-group readers:
-   `SELECTION: [(col("ASSET")) > (1000000.0)]`
-   Entire row groups containing community banks with assets $< \$1\text{B}$ are skipped without memory allocation.
-3. **Common Subplan Elimination (CSE):** When calculating multiple lags (`shift(1)`, `shift(4)`), Polars evaluates the partition hash over `CERT` once, keeping sorted runs in contiguous cache lines.
+1. **Projection Pushdown:** The physical plan pushes column pruning directly into the Parquet scanner:
+   `PROJECT 5/33 COLUMNS` (loading only the 5 columns `REPDTE`, `STNAME`, `ASSET`, `EQ`, and `ROA` required for state-quarter aggregation).
+   Only ~15% of columns are read from NVMe into system memory.
+2. **Predicate Pushdown:** Filter expressions are fused directly into the Parquet file scan:
+   `SELECTION: ((col("ASSET").is_not_null() & (col("ASSET") > 0.0)) & (col("REPDTE") >= "20080101"))`
+   Entire pre-2008 quarterly Parquet partitions/row groups are skipped without memory allocation.
+3. **Common Subplan Elimination (CSE):** In the full-panel pipeline (`reports/polars_query_plans.txt` Section 2), Polars creates shared CSE nodes (`__POLARS_CSER_0x100000020`, `__POLARS_CSER_0x100000030`) so repeated boolean predicates across lag and 4-quarter rolling expressions are evaluated once per bank partition.
 
 #### B. PySpark Catalyst Plan & Join Optimization (`reports/pyspark_catalyst_plans.txt`)
 In distributed computing, data shuffling across worker nodes is the primary bottleneck. We benchmarked two distinct join strategies when enriching the 1.68-million row panel with structural metadata from the `/institutions` (27,835 rows) and `/failures` (4,117 rows) tables:
@@ -425,7 +425,7 @@ We evaluate five candidate model architectures spanning traditional supervisory 
 2. `Logistic_Regression_CAMELS`: L2-regularized logistic regression fitted with inside-fold standardization.
 3. `HistGradientBoosting_CAMELS`: Scikit-Learn’s native histogram-based gradient boosting classifier.
 4. `Spark_MLlib_GBTClassifier`: Distributed gradient-boosted trees trained via PySpark MLlib (`reports/part5_spark_mllib_results.json`).
-5. `LightGBM_CAMELS`: Champion gradient-boosted tree model with tuned regularization (`num_leaves=31`, `min_child_samples=50`, `colsample_bytree=0.8`, `learning_rate=0.03`).
+5. `LightGBM_CAMELS`: Champion gradient-boosted tree model with tuned regularization (`num_leaves=31`, `min_child_samples=100`, `colsample_bytree=0.8`, `learning_rate=0.03`).
 
 The empirical evaluation across DEV Cross-Validation, Out-of-Fold (OOF), and single-shot Out-of-Time `TEST (2008–2014 GFC)` is summarized in Table 6 and Figure 6 (Panel A).
 
@@ -695,15 +695,19 @@ BKCLASS                    —    Regulatory Charter (10 Categories)       0.51%
 
 ### 7.2 Physical Query Plans Excerpts
 
-#### A. Polars Optimized Logical & Physical Query Plan (`reports/polars_query_plans.txt`)
+#### A. Polars Optimized Selective Query Plan (`reports/polars_query_plans.txt`)
 ```text
--------- POLARS PHYSICAL PLAN (OPTIMIZED PUSHDOWN) --------
-Simple SELECT with Projection & Predicate Pushdown:
-  DF ["CERT", "REPDTE", "ASSET", "EQ", "ROA"]; PROJECT 5/33 COLUMNS
-  SELECTION: [((col("ASSET")) > (1000000.0)) & ((col("ROA")) < (0.0))]
-  Parquet SCAN data/processed/bank_quarter_panel.parquet
-  PROJECT 5/33 COLUMNS
-  PREDICATE PUSHDOWN: [ASSET > 1.0e6, ROA < 0.0]
+SORT BY [col("REPDTE"), col("STNAME")]
+  AGGREGATE[maintain_order: false]
+    [len().alias("peer_bank_count"), col("ASSET").sum().alias("peer_total_assets"), col("ROA").mean().alias("peer_mean_roa"), col("eq_to_asset").mean().alias("peer_mean_eq_to_asset")] BY [col("REPDTE"), col("STNAME")]
+    FROM
+    simple π 5/5 ["REPDTE", "STNAME", "ASSET", ... 2 other columns]
+       WITH_COLUMNS:
+       [(col("EQ") / col("ASSET")).alias("eq_to_asset")]
+        Parquet SCAN [data/raw/financials/REPDTE=19840331.parquet, ... 169 other sources]
+        PROJECT 5/33 COLUMNS
+        SELECTION: ((col("ASSET").is_not_null() & (col("ASSET") > 0.0)) & (col("REPDTE") >= "20080101"))
+        ESTIMATED ROWS: 1739618
 ```
 
 #### B. Apache Spark Catalyst Physical Plan: BroadcastHashJoin vs SortMergeJoin (`reports/pyspark_catalyst_plans.txt`)

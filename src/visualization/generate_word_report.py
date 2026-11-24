@@ -463,7 +463,7 @@ def generate_full_word_report():
     )
     add_body_p(
         doc,
-        "Our acquisition architecture targets three distinct endpoints of the FDIC BankFind Suite public interface. First, the financials endpoint covers all 170 quarters from 1984Q1 to 2026Q2, capturing 1,682,616 raw filings. Second, the institutions endpoint records demographic attributes for 27,835 unique banks. Third, the failures endpoint records all 4,117 official regulatory resolutions and financial assistance transactions. Benchmarking against the course starter script fdic_download_starter.py, our enhanced acquisition client in src/data/acquire.py introduces enterprise grade features: a strict 33 column PyArrow schema, resumable tracking with SHA256 cryptographic manifests, concurrent asynchronous workers, exponential backoff with jitter against rate limits, and deterministic sorting on institution certificate number and report date.",
+        "Our acquisition architecture targets three distinct endpoints of the FDIC BankFind Suite public interface. First, the financials endpoint covers all 170 quarters from 1984Q1 to 2026Q2, capturing 1,682,616 raw filings. Second, the institutions endpoint records demographic attributes for 27,835 unique banks. Third, the failures endpoint records all 4,117 official regulatory resolutions and financial assistance transactions. Benchmarking against the course starter script fdic_download_starter.py, our enhanced acquisition client in src/data/acquire.py introduces enterprise grade features: a strict 33 column PyArrow schema, resumable tracking with JSON completeness manifests verifying API totals and file byte sizes, persistent HTTP session pagination with exponential backoff against rate limits, and deterministic sorting on institution certificate number and report date.",
     )
 
     add_heading_2(doc, "Physical Storage Benchmark across Five Formats")
@@ -498,7 +498,7 @@ def generate_full_word_report():
     )
     add_body_p(
         doc,
-        "Second, column projection and predicate pushdown dramatically accelerate queries. Projecting five core balance sheet columns drops Parquet Snappy read latency from 147.9 milliseconds down to 50.8 milliseconds. Adding predicate filtering for assets exceeding one billion dollars and negative return on assets slashes latency to 31.9 milliseconds, representing a 459.0 fold speedup over Pandas full text reads at 14,652.7 milliseconds, a 22.6 fold speedup over Polars full text scans at 721.9 milliseconds, and a 16.4 fold speedup over Polars selective text queries at 522.5 milliseconds. Parquet achieves this by inspecting row group minimum and maximum statistics in the metadata footer, skipping unreferenced byte ranges directly on disk.",
+        "Second, column projection and predicate pushdown dramatically accelerate queries. Projecting five core balance sheet columns drops Parquet Snappy read latency from 147.9 milliseconds down to 50.8 milliseconds. Adding quarterly predicate filtering on report date 20091231 slashes latency to 31.9 milliseconds, representing a 459.0 fold speedup over Pandas full text reads at 14,652.7 milliseconds, a 22.6 fold speedup over Polars full text scans at 721.9 milliseconds, and a 16.4 fold speedup over Polars selective text queries at 522.5 milliseconds. Parquet achieves this by inspecting row group minimum and maximum statistics in the metadata footer, skipping unreferenced byte ranges directly on disk.",
     )
     add_body_p(
         doc,
@@ -594,7 +594,7 @@ def generate_full_word_report():
     )
     add_body_p(
         doc,
-        "Inspection of the Polars physical execution plan reveals why Polars Lazy achieves its 40.29 fold speedup. The engine pushes column pruning directly into the Parquet reader, loading only 5 of 33 columns. It pushes predicate filters into row group readers, skipping whole row groups of small institutions without memory allocation. Furthermore, common subplan elimination optimizes contiguous lag calculations by hashing institution identifiers once.",
+        "Inspection of the Polars physical execution plan reveals why Polars Lazy achieves its 40.29 fold speedup. The engine pushes column pruning directly into the Parquet reader, loading only 5 of 33 columns needed for state quarter aggregation. It pushes predicate filters requiring positive assets and report dates from 2008 onward directly into the Parquet scanner, skipping pre 2008 row groups without memory allocation. Furthermore, common subplan elimination caches repeated expression predicates across lag and rolling calculations in a single pass.",
     )
     add_body_p(
         doc,
