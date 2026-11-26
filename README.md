@@ -242,7 +242,7 @@ python -X utf8 src/audit/verify_end_to_end.py
 
 ## 5. Summary of Anti-Leakage Architecture (`47/47 PASS`)
 
-Per Section 4 of the BFT65B examination rubric, **any use of future information caps Parts 4 and 5 at 30% of available points**. Our pipeline implements a zero-trust anti-leakage architecture verified by 47 automated tests:
+Per Section 4 of the BFT65B examination rubric, **any use of future information caps Parts 4 and 5 at 30% of available points**. The pipeline implements a zero-trust anti-leakage architecture verified by 47 automated tests:
 
 ```text
 ==============================================================================
