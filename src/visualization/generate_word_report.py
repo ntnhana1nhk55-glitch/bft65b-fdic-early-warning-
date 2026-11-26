@@ -24,20 +24,20 @@ REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 OUTPUT_DOCX = REPORTS_DIR / "FINAL_REPORT_BFT65B.docx"
 
-# Palette definitions
-NAVY_HEX = "1F4E79"
-SLATE_HEX = "2C3E50"
-CHARCOAL_HEX = "262626"
-MUTED_HEX = "595959"
-BORDER_HEX = "CCCCCC"
-ZEBRA_HEX = "F9FAFB"
-CALLOUT_BG_HEX = "F0F4F8"
-CALLOUT_BORDER_HEX = "1F4E79"
+# Palette definitions (Monochrome Black and White Academic Theme)
+NAVY_HEX = "000000"
+SLATE_HEX = "1A1A1A"
+CHARCOAL_HEX = "000000"
+MUTED_HEX = "4D4D4D"
+BORDER_HEX = "8C8C8C"
+ZEBRA_HEX = "F2F2F2"
+CALLOUT_BG_HEX = "F5F5F5"
+CALLOUT_BORDER_HEX = "000000"
 
-NAVY_RGB = RGBColor(0x1F, 0x4E, 0x79)
-SLATE_RGB = RGBColor(0x2C, 0x3E, 0x50)
-CHARCOAL_RGB = RGBColor(0x26, 0x26, 0x26)
-MUTED_RGB = RGBColor(0x59, 0x59, 0x59)
+NAVY_RGB = RGBColor(0x00, 0x00, 0x00)
+SLATE_RGB = RGBColor(0x1A, 0x1A, 0x1A)
+CHARCOAL_RGB = RGBColor(0x00, 0x00, 0x00)
+MUTED_RGB = RGBColor(0x4D, 0x4D, 0x4D)
 
 
 # -----------------------------------------------------------------------------
@@ -223,7 +223,7 @@ def add_body_p(doc, text, bold_prefix=None, space_after=5):
 
 
 def add_callout(doc, text, title=None):
-    """Add an executive callout box with a thick navy left border."""
+    """Add an executive callout box with a thick black left border."""
     tbl = doc.add_table(rows=1, cols=1)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
     tbl.autofit = False
@@ -434,7 +434,7 @@ def generate_full_word_report():
     add_heading_2(doc, "Executive Abstract")
     add_body_p(
         doc,
-        "We design, implement, and empirically validate an enterprise grade Big Data early warning pipeline for banking distress and regulatory resolution across the complete digital history of Federal Deposit Insurance Corporation Call Reports from 1984Q1 to 2026Q2. Covering 1,682,616 quarterly bank filings across 27,835 unique depository institutions and 4,117 regulatory resolution events, our pipeline resolves the foundational challenges of longitudinal data engineering, distributed engine optimization, econometric causality, and supervisory decision economics.",
+        "This study designs, implements, and empirically validates an enterprise grade Big Data early warning pipeline for banking distress and regulatory resolution across the complete digital history of Federal Deposit Insurance Corporation Call Reports from 1984Q1 to 2026Q2. Covering 1,682,616 quarterly bank filings across 27,835 unique depository institutions and 4,117 regulatory resolution events, this pipeline resolves the foundational challenges of longitudinal data engineering, distributed engine optimization, econometric causality, and supervisory decision economics.",
     )
     add_body_p(
         doc,
@@ -446,11 +446,11 @@ def generate_full_word_report():
     )
     add_body_p(
         doc,
-        "In Leak Free Econometric Engineering, we formulate a causal point in time forward distress target over a strict four quarter horizon, quarantine 17,529 right censored quarters after June 2025, enforce a four quarter embargo across calendar year 2007, and engineer a 40 feature CAMELS matrix with contiguous flow decumulation and contemporaneous state peer benchmarking. An adversarial Silver to Gold perturbation proof establishes zero backward data leakage with maximum absolute difference bounded at 1.39e-17.",
+        "In Leak Free Econometric Engineering, the framework formulates a causal point in time forward distress target over a strict four quarter horizon, quarantines 17,529 right censored quarters after June 2025, enforces a four quarter embargo across calendar year 2007, and engineers a 40 feature CAMELS matrix with contiguous flow decumulation and contemporaneous state peer benchmarking. An adversarial Silver to Gold perturbation proof establishes zero backward data leakage with maximum absolute difference bounded at 1.39e-17.",
     )
     add_body_p(
         doc,
-        "Across Purged Expanding Window Cross Validation and out of time evaluation on the Global Financial Crisis from 2008 to 2014, our champion LightGBM CAMELS model achieves a Test Area Under the Precision Recall Curve of 0.6454, which is 66.9 fold higher than random guessing and 38.4 percent higher than the supervisory Texas Ratio heuristic. Under an inspection capacity budget of top 2 percent of banks, the model captures 80.2 percent of all failing institutions and 78.1 percent of failing banking assets. Data driven threshold optimization selects an optimal probability cutoff of 0.0401, generating 4,074.08 million dollars in net regulatory savings during the Global Financial Crisis. We conclude by translating these findings into an actionable architectural blueprint for the State Bank of Vietnam.",
+        "Across Purged Expanding Window Cross Validation and out of time evaluation on the Global Financial Crisis from 2008 to 2014, the champion LightGBM CAMELS model achieves a Test Area Under the Precision Recall Curve of 0.6454, which is 66.9 fold higher than random guessing and 38.4 percent higher than the supervisory Texas Ratio heuristic. Under an inspection capacity budget of top 2 percent of banks, the model captures 80.2 percent of all failing institutions and 78.1 percent of failing banking assets. Data driven threshold optimization selects an optimal probability cutoff of 0.0401, generating 4,074.08 million dollars in net regulatory savings during the Global Financial Crisis. This report concludes by translating these findings into an actionable architectural blueprint for the State Bank of Vietnam.",
     )
 
     # -------------------------------------------------------------------------
@@ -463,13 +463,13 @@ def generate_full_word_report():
     )
     add_body_p(
         doc,
-        "Our acquisition architecture targets three distinct endpoints of the FDIC BankFind Suite public interface. First, the financials endpoint covers all 170 quarters from 1984Q1 to 2026Q2, capturing 1,682,616 raw filings. Second, the institutions endpoint records demographic attributes for 27,835 unique banks. Third, the failures endpoint records all 4,117 official regulatory resolutions and financial assistance transactions. Benchmarking against the course starter script fdic_download_starter.py, our enhanced acquisition client in src/data/acquire.py introduces enterprise grade features: a strict 33 column PyArrow schema, resumable tracking with JSON completeness manifests verifying API totals and file byte sizes, persistent HTTP session pagination with exponential backoff against rate limits, and deterministic sorting on institution certificate number and report date.",
+        "The acquisition architecture targets three distinct endpoints of the FDIC BankFind Suite public interface. First, the financials endpoint covers all 170 quarters from 1984Q1 to 2026Q2, capturing 1,682,616 raw filings. Second, the institutions endpoint records demographic attributes for 27,835 unique banks. Third, the failures endpoint records all 4,117 official regulatory resolutions and financial assistance transactions. Benchmarking against the course starter script fdic_download_starter.py, the enhanced acquisition client in src/data/acquire.py introduces enterprise grade features: a strict 33 column PyArrow schema, resumable tracking with JSON completeness manifests verifying API totals and file byte sizes, persistent HTTP session pagination with exponential backoff against rate limits, and deterministic sorting on institution certificate number and report date.",
     )
 
     add_heading_2(doc, "Physical Storage Benchmark across Five Formats")
     add_body_p(
         doc,
-        "To establish the optimal physical storage layout for large scale financial panel analytics, we implemented a comprehensive storage benchmark comparing five standard layouts on local solid state storage across all 1,682,616 rows and 33 columns. The empirical measurements from reports/storage_benchmark_full.csv are summarized in Table 1 and visualized in Figure 1.",
+        "To establish the optimal physical storage layout for large scale financial panel analytics, a comprehensive storage benchmark was implemented comparing five standard layouts on local solid state storage across all 1,682,616 rows and 33 columns. The empirical measurements from reports/storage_benchmark_full.csv are summarized in Table 1 and visualized in Figure 1.",
     )
 
     t1_headers = ["Storage Format", "Disk Footprint", "Compression", "Write Duration", "Full Read Pandas", "Full Read Polars", "Projection 5 Cols", "Pushdown Query"]
@@ -511,11 +511,11 @@ def generate_full_word_report():
     add_heading_1(doc, "2. Automated Data Quality Audit and Point in Time Panel Construction")
     add_body_p(
         doc,
-        "Longitudinal banking panels require specialized accounting domain knowledge. Over four decades, the United States banking system underwent massive structural changes. Our automated quality audit in src/data/quality_audit.py catalogs these structural phenomena across all 1,682,616 raw filings.",
+        "Longitudinal banking panels require specialized accounting domain knowledge. Over four decades, the United States banking system underwent massive structural changes. The automated quality audit in src/data/quality_audit.py catalogs these structural phenomena across all 1,682,616 raw filings.",
     )
     add_body_p(
         doc,
-        "Active reporting commercial banks and thrifts declined by 76.2 percent from a peak of 18,133 institutions in 1986Q1 down to 4,313 institutions in 2026Q2, as shown in Figure 2 Panel A. This secular consolidation was driven by interstate banking deregulation and ongoing mergers. Across 24,064 institutions, our audit verified zero duplicate certificate and report date pairs and zero nonpositive asset records, while identifying 32 institutions with 33 internal timeline gap events that our downstream feature pipeline guards by enforcing contiguous quarterly indices. Removing 1,185 residual post terminal receivership filings submitted on or after terminal closure across 270 failed banks, while preserving 4,425 valid post assistance operating quarters, yields the clean Silver panel of 1,681,431 rows across 24,062 banks.",
+        "Active reporting commercial banks and thrifts declined by 76.2 percent from a peak of 18,133 institutions in 1986Q1 down to 4,313 institutions in 2026Q2, as shown in Figure 2 Panel A. This secular consolidation was driven by interstate banking deregulation and ongoing mergers. Across 24,064 institutions, the audit verified zero duplicate certificate and report date pairs and zero nonpositive asset records, while identifying 32 institutions with 33 internal timeline gap events that the downstream feature pipeline guards by enforcing contiguous quarterly indices. Removing 1,185 residual post terminal receivership filings submitted on or after terminal closure across 270 failed banks, while preserving 4,425 valid post assistance operating quarters, yields the clean Silver panel of 1,681,431 rows across 24,062 banks.",
     )
 
     add_figure(doc, "fig1_panel_coverage_and_failures.png", "Figure 2. Forty Two Years of United States Banking Distress and Structural Consolidation from 1984Q1 to 2026Q2")
@@ -523,13 +523,13 @@ def generate_full_word_report():
     add_heading_2(doc, "Negative Equity as Technical Balance Sheet Insolvency")
     add_body_p(
         doc,
-        "Our data quality audit identified 15,659 raw bank quarters and 14,605 clean Silver bank quarters where book equity was strictly negative. In generic corporate data cleaning, negative equity might be discarded as an anomaly. In banking supervision, negative book equity represents severe technical balance sheet insolvency. During the 1980s Savings and Loan crisis, regulatory forbearance allowed insolvent thrifts to operate for years. Discarding negative equity banks would introduce severe survivorship bias. We preserve all 14,605 negative equity observations in the Silver panel and encode a dedicated structural indicator for technical insolvency.",
+        "The data quality audit identified 15,659 raw bank quarters and 14,605 clean Silver bank quarters where book equity was strictly negative. In generic corporate data cleaning, negative equity might be discarded as an anomaly. In banking supervision, negative book equity represents severe technical balance sheet insolvency. During the 1980s Savings and Loan crisis, regulatory forbearance allowed insolvent thrifts to operate for years. Discarding negative equity banks would introduce severe survivorship bias. Accordingly, this study preserves all 14,605 negative equity observations in the Silver panel and encodes a dedicated structural indicator for technical insolvency.",
     )
 
     add_heading_2(doc, "The Call Report Flow Accumulation Sawtooth and Basel Sentinel Decoding")
     add_body_p(
         doc,
-        "A primary pitfall in Call Report data engineering is the income statement convention. While balance sheet items represent point in time stocks, income statement items such as net income, interest income, and noninterest expense are reported as cumulative Year to Date flows. As shown in Table 2 and Figure 3 Panel A, raw median net income scales mechanically from 181.0 thousand dollars in Q1 to 373.0 thousand dollars in Q2, 542.0 thousand dollars in Q3, and 683.0 thousand dollars in Q4, while official annualized return on assets remains flat between 0.94 percent and 0.99 percent. Unadjusted ratios produce artificial seasonal spikes. We eliminate this sawtooth through within bank decumulation, calculating quarterly flow as current net income minus prior quarter net income for quarters two, three, and four.",
+        "A primary pitfall in Call Report data engineering is the income statement convention. While balance sheet items represent point in time stocks, income statement items such as net income, interest income, and noninterest expense are reported as cumulative Year to Date flows. As shown in Table 2 and Figure 3 Panel A, raw median net income scales mechanically from 181.0 thousand dollars in Q1 to 373.0 thousand dollars in Q2, 542.0 thousand dollars in Q3, and 683.0 thousand dollars in Q4, while official annualized return on assets remains flat between 0.94 percent and 0.99 percent. Unadjusted ratios produce artificial seasonal spikes. The pipeline eliminates this sawtooth through within bank decumulation, calculating quarterly flow as current net income minus prior quarter net income for quarters two, three, and four.",
     )
 
     t2_headers = ["Quarter Endpoint", "Reporting Banks", "Cumulative Net Income", "Decumulated Net Income", "Cumulative Interest", "Annualized Return on Assets"]
@@ -552,7 +552,7 @@ def generate_full_word_report():
 
     add_callout(
         doc,
-        "In accordance with our independent external audit, we disclose three institutional findings. First, the 12,459 positive failure quarters comprise 10,870 formal receivership closures and 1,589 open bank assistance transactions. We preserve 4,425 subsequent operating quarters for assisted institutions, capturing 37 subsequent terminal failures. Second, three institutions experienced two recorded failure events during the 1980s conservatorship era, retaining 26 operating quarters between events. Third, the public API returns float value 0.0 for unreported risk based capital prior to Basel I in 1990 and under the 2020s Community Bank Leverage Ratio opt out. We decode these sentinel zeros to missing values and instantiate a dedicated regulatory missingness indicator.",
+        "In accordance with independent audit standards, this report discloses three institutional findings. First, the 12,459 positive failure quarters comprise 10,870 formal receivership closures and 1,589 open bank assistance transactions. The Silver panel preserves 4,425 subsequent operating quarters for assisted institutions, capturing 37 subsequent terminal failures. Second, three institutions experienced two recorded failure events during the 1980s conservatorship era, retaining 26 operating quarters between events. Third, the public API returns float value 0.0 for unreported risk based capital prior to Basel I in 1990 and under the 2020s Community Bank Leverage Ratio opt out. The preprocessing pipeline decodes these sentinel zeros to missing values and instantiates a dedicated regulatory missingness indicator.",
         title="Audit Disclosures on Resolutions, Multi Event Thrifts, and Sentinel Values",
     )
 
@@ -562,7 +562,7 @@ def generate_full_word_report():
     add_heading_1(doc, "3. Scalable Data Processing, Query Plans and Distributed Execution")
     add_body_p(
         doc,
-        "To evaluate computational scalability for banking supervision, we implemented identical end to end feature transformations across four computational engines: vectorized Pandas, Polars Eager, Polars Lazy, and Apache Spark PySpark. The pipeline executes five operations: filtering active reporting quarters, calculating contiguous quarterly shifts, decumulating income statement flows, computing bank level rolling statistics, and aggregating contemporaneous state quarter peer averages.",
+        "To evaluate computational scalability for banking supervision, this study implements identical end to end feature transformations across four computational engines: vectorized Pandas, Polars Eager, Polars Lazy, and Apache Spark PySpark. The pipeline executes five operations: filtering active reporting quarters, calculating contiguous quarterly shifts, decumulating income statement flows, computing bank level rolling statistics, and aggregating contemporaneous state quarter peer averages.",
     )
 
     t3_headers = ["Workload Pipeline", "Processing Engine", "Median Duration", "Mean Duration", "Peak Memory RSS", "Relative Speedup"]
@@ -617,7 +617,7 @@ def generate_full_word_report():
     add_heading_1(doc, "4. Leak Free CAMELS Feature Pipeline and Preprocessing Isolation")
     add_body_p(
         doc,
-        "We construct a comprehensive 40 feature matrix covering all six dimensions of the CAMELS regulatory framework. The features capture capital adequacy loss cushions, nonperforming asset burdens, overhead efficiency, operating profitability, liquidity cushions, trailing trajectories, and contemporaneous state peer deviations.",
+        "This study constructs a comprehensive 40 feature matrix covering all six dimensions of the CAMELS regulatory framework. The features capture capital adequacy loss cushions, nonperforming asset burdens, overhead efficiency, operating profitability, liquidity cushions, trailing trajectories, and contemporaneous state peer deviations.",
     )
 
     t4_headers = ["Pillar", "Feature Count", "Core Feature Examples", "Economic and Supervisory Mechanism"]
@@ -652,7 +652,7 @@ def generate_full_word_report():
 
     add_callout(
         doc,
-        "To prove zero data leakage with mathematical certainty, we corrupted all post 2006 Silver panel data by multiplying core financial variables by one million and adding 999,999. Running the complete feature engineering and preprocessing pipeline on both clean and corrupted data yielded an identical Development feature matrix with maximum absolute difference bounded at 1.39e-17, verified in reports/final_audit_certificate.json. This confirms zero look ahead bias or backward rolling contamination.",
+        "To prove zero data leakage with mathematical certainty, an adversarial audit corrupted all post 2006 Silver panel data by multiplying core financial variables by one million and adding 999,999. Running the complete feature engineering and preprocessing pipeline on both clean and corrupted data yielded an identical Development feature matrix with maximum absolute difference bounded at 1.39e-17, verified in reports/final_audit_certificate.json. This confirms zero look ahead bias or backward rolling contamination.",
         title="Adversarial Silver to Gold Perturbation Invariance Proof",
     )
 
@@ -662,7 +662,7 @@ def generate_full_word_report():
     add_heading_1(doc, "5. Modelling, Purged Cross Validation and Cost Driven Evaluation")
     add_body_p(
         doc,
-        "Standard cross validation on longitudinal data creates look ahead leakage because future training rows predict past validation rows. We design a four fold Purged Expanding Window Cross Validation scheme inside the Development partition, enforcing a strict four quarter purge buffer between training endpoints and validation starts as detailed in Table 5.",
+        "Standard cross validation on longitudinal data creates look ahead leakage because future training rows predict past validation rows. This study designs a four fold Purged Expanding Window Cross Validation scheme inside the Development partition, enforcing a strict four quarter purge buffer between training endpoints and validation starts as detailed in Table 5.",
     )
 
     t5_headers = ["CV Fold", "Training Window", "Purge Buffer", "Validation Window", "Historical Regime", "Validation Rows", "Failures", "LightGBM PR AUC"]
@@ -684,7 +684,7 @@ def generate_full_word_report():
     add_heading_2(doc, "Out of Time Test Benchmark on the Global Financial Crisis")
     add_body_p(
         doc,
-        "We evaluate candidate architectures once on the blind Global Financial Crisis Test partition covering 2008Q1 to 2014Q4 with 212,645 rows and 2,052 positive failure quarters across 526 failed banks. To demonstrate distributed training, src/models/spark_mllib_demo.py additionally trains Spark MLlib Gradient Boosted Trees and Spark MLlib Logistic Regression strictly on DEV, achieving Test PR AUC of 0.60184 and 0.30609 respectively. Full comparison results are summarized in Table 6 and Figure 6 Panel A.",
+        "Candidate architectures are evaluated once on the blind Global Financial Crisis Test partition covering 2008Q1 to 2014Q4 with 212,645 rows and 2,052 positive failure quarters across 526 failed banks. To demonstrate distributed training, src/models/spark_mllib_demo.py additionally trains Spark MLlib Gradient Boosted Trees and Spark MLlib Logistic Regression strictly on DEV, achieving Test PR AUC of 0.60184 and 0.30609 respectively. Full comparison results are summarized in Table 6 and Figure 6 Panel A.",
     )
 
     t6_headers = ["Model Architecture", "Test PR AUC", "Test ROC AUC", "Brier Score", "Recall Top 1%", "Recall Top 2%", "Recall Top 5%", "Fit Duration"]
@@ -769,7 +769,7 @@ def generate_full_word_report():
     )
     add_body_p(
         doc,
-        "Our automated quality audit exposed six structural hazards: disguised sentinel zeros for unreported Basel capital prior to 1990 and under post 2020 CBLR opt outs, cumulative Year to Date income statement sawtooth patterns across calendar quarters, 14,605 negative book equity technical insolvencies, 1,185 post terminal receivership filings across 270 closed banks, 33 reporting timeline gaps across 32 institutions, and 17,529 right censored quarters after June 2025. The pipeline resolves every hazard without look ahead bias by decoding sentinel zeros with an explicit missingness flag, performing strictly causal within bank flow decumulation guarded by contiguous quarterly indices, preserving negative equity and post assistance operating quarters, quarantining post 2025Q2 labels and calendar year 2007 as an embargo gap, and fitting all winsorization, scaling, and imputation transformers strictly on training data with adversarial perturbation invariance bounded at 1.39e-17.",
+        "The automated quality audit exposed six structural hazards: disguised sentinel zeros for unreported Basel capital prior to 1990 and under post 2020 CBLR opt outs, cumulative Year to Date income statement sawtooth patterns across calendar quarters, 14,605 negative book equity technical insolvencies, 1,185 post terminal receivership filings across 270 closed banks, 33 reporting timeline gaps across 32 institutions, and 17,529 right censored quarters after June 2025. The pipeline resolves every hazard without look ahead bias by decoding sentinel zeros with an explicit missingness flag, performing strictly causal within bank flow decumulation guarded by contiguous quarterly indices, preserving negative equity and post assistance operating quarters, quarantining post 2025Q2 labels and calendar year 2007 as an embargo gap, and fitting all winsorization, scaling, and imputation transformers strictly on training data with adversarial perturbation invariance bounded at 1.39e-17.",
         bold_prefix="Question 2 on Raw Data Quality Hazards and Zero Look Ahead Handling: ",
     )
     add_body_p(
@@ -808,7 +808,7 @@ def generate_full_word_report():
 
     add_callout(
         doc,
-        "We recommend a dual tier early warning architecture for Vietnam. For commercial banks, train specialized risk models incorporating real estate credit exposure, corporate bond holdings, interbank contagion networks, and daily Credit Information Center loan performance. For the 1,200 Peoples Credit Funds, deploy the exact Polars and LightGBM pipeline developed here to monitor local credit quality quarterly. The prediction target should be defined as formal intervention under Special Control pursuant to the Law on Credit Institutions.",
+        "This study recommends a dual tier early warning architecture for Vietnam. For commercial banks, supervisory authorities should train specialized risk models incorporating real estate credit exposure, corporate bond holdings, interbank contagion networks, and daily Credit Information Center loan performance. For the 1,200 Peoples Credit Funds, supervisors can deploy the exact Polars and LightGBM pipeline developed here to monitor local credit quality quarterly. The prediction target should be defined as formal intervention under Special Control pursuant to the Law on Credit Institutions.",
         title="State Bank of Vietnam Lakehouse Implementation Blueprint",
     )
 
